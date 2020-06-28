@@ -1,0 +1,39 @@
+#!/usr/bin/perl
+# $Id: MuraMG-Error-404.cgi-pl,v 1.2 2009/01/12 03:23:13 lam Exp lam $
+
+use LAM::LAM qw(displaySource displayPage);                # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                                 # Enable warnings.
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+my $errorType = '404 Not Found!';        # 404 Page Not Found! http server error
+
+my $m1 =                                '<h2> The requested page was not found.'
+. "</h2>\n"; my $m2 = <<ENDm2;
+<p>
+
+ENDm2
+; my $referer = '<br><br>';
+my $m3 = '<h3>Check the URL for errors.</h3>';
+
+my $uriD = $ENV{REQUEST_URI};
+if (length($uriD) > 50) {$uriD = substr($uriD,0,50).'...'}
+
+my $uri = p(). h3('Request: <a href="' . $ENV{REQUEST_URI} . '">'
+                               . "\n" . $uriD . "</a>\n");
+
+if ($ENV{HTTP_REFERER}) {
+    my $hRef = $ENV{HTTP_REFERER}; my $dhRef = $hRef;
+    if (length($dhRef) > 50) {
+        $dhRef = substr($dhRef,0,50).'...'};
+        $referer = h3('Referer: <a href="' . $hRef . '">'
+                                  . "\n" . $dhRef . "</a>\n");
+    $m3 = h2('Mr. M. may have made an error on the website.');
+    }
+
+my $h1Title = '<a href="http://www.muramg.info" target=_top>'
+            . "\nMr. M's Website</a>\n";
+
+LAM::displayPage('-m', '-c', '-t', 'MuraMG Error', $h1Title
+, "\n$m1\n$uri\n\n$referer\n\n$m3$m2<br><br>$errorType")

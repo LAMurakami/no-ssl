@@ -1,0 +1,72 @@
+#!/usr/bin/perl
+# $Id: Escape.cgi-pl,v 1.9 2007/09/13 10:17:39 lam Exp lam $
+
+use LAM::LAM qw(displayPage displaySource viewFormData);
+use CGI qw(:all escape unescape);
+use strict;     # Force me to use strict variable syntax.
+use warnings;  # Enable all warnings.
+
+LAM::displaySource(); # Display source, rlog, etc. if requested.
+
+if (param('Submit')) { my $submitRequest = param('Submit');
+	if ($submitRequest eq 'Show Escape') {showEscape()}
+	elsif ($submitRequest eq 'Show UnEscape') {showUnEscape()}
+	elsif ($submitRequest eq 'View Form Data') {LAM::viewFormData()}
+} else { # Display the Show Escape Form by default.
+	my $formData = start_form(). 'Text String:'. br(). "\n".
+	    textarea(-name=>'Text String', -rows=>10, -cols=>80, -wrap=>'soft',
+	    -value=>"{select|describe|show} {argument(s)}"). "\n". br().
+	    'Plus sign:'. "\n". radio_group({-name=>'Plus sign',
+		-values=>['Regular','Special'],-default=>'Regular'}). "\n".
+		div({-align=>'center'},
+	    submit(-name=>'Submit',-value=>'Show Escape'), "\n",
+	    submit(-name=>'Submit',-value=>'Show UnEscape'), "\n",
+	    reset(),
+	    submit(-name=>'Submit',-value=>'View Form Data'), br(), "\n");
+	LAM::displayPage('-c', center('Show Escape.'), $formData)}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub showEscape { my $bodyText = '';	my $tempEscaped = '';
+my $textString = param('Text String') || '';
+my $textStringEscaped = escape($textString); # use CGI::escape()
+
+if (param('Plus sign')) {my $plusSign = param('Plus sign');
+	if ($plusSign eq 'Special') {$textStringEscaped =~ s/%20/+/g}}
+
+if (length($textStringEscaped) > 72) { # prevent a really wide page
+    $tempEscaped = "<pre>\n";
+    my $tempString = $textStringEscaped;
+    my $length = length($tempString); my $offset = 0;
+    while ($offset < $length) {
+        $tempEscaped .= substr($tempString, $offset, 72). " :\n";
+        $offset = $offset + 72
+    } $tempEscaped .= "\n</pre>\n"
+} else {$tempEscaped = $textStringEscaped}
+my $textStringUnEscaped = unescape($textStringEscaped);
+$bodyText .=  "\nText String:\n". p(). "\n$textString\n". p(). "\n".
+    "\nEscaped Text String:\n". p(). b("\n$tempEscaped\n"). p(). "\n".
+    "\nUnEscaped Text String:\n". p(). "\n$textStringUnEscaped\n". p(). "\n";
+if ($textString ne $textStringUnEscaped) {LAM::displayPage('-e', '-c',
+    'The value has changed.', h2("\nThe values\n") . $bodyText)}
+    	# Darn! These should match!
+else {LAM::displayPage('-c', center('Show Escape.'),
+    h2("\nThe specified Text String with special characters escaped.\n").
+    $bodyText,)}}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub showUnEscape { my $bodyText = '';	my $textStringUnEscaped = '';
+my $textString = param('Text String') || '';
+$textStringUnEscaped = unescape($textString); # use CGI::unescape()
+my $textStringEscaped = escape($textStringUnEscaped);
+
+if (param('Plus sign')) {my $plusSign = param('Plus sign');
+	if ($plusSign eq 'Special') {$textStringEscaped =~ s/%20/+/g}}
+
+$bodyText .=  "\nText String:\n". p(). "\n$textString\n". p(). "\n".
+    "\nUnEscaped Text String:\n". p(). "\n$textStringUnEscaped\n". p(). "\n".
+    "\nEscaped Text String:\n". p(). b("\n$textStringEscaped\n"). p(). "\n";
+if ($textString ne $textStringEscaped) {LAM::displayPage('-e', '-c',
+    'The value has changed.', h2("\nThe values\n") . $bodyText)}
+    	# Darn! These should match!
+else {LAM::displayPage('-c', center('Show UnEscape.'),
+    h2("\nThe specified Text String with special characters UnEscaped.\n").
+    $bodyText,)}}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|

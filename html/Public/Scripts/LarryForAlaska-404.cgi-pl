@@ -1,0 +1,81 @@
+#!/usr/bin/perl
+# $Id: LarryForAlaska-404.cgi-pl,v 1.7 2020/02/03 03:07:39 ubuntu Exp ubuntu $
+
+use LAM::LAM qw(displaySource displayPage);                # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                                 # Enable warnings.
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+my $errorType = '404 Not Found!';        # 404 Page Not Found! http server error
+
+my $h1Title =  <<ENDh1Title;
+
+<!-- q:/var/www/html/Public/Scripts/LarryForAlaska-404.cgi-pl -->
+
+<a href="http://LarryForAlaska.com" target=_top>Larry For Alaska</a>
+
+ENDh1Title
+
+my $paidForNotice =  <<ENDpaidForNotice;
+<center>
+<h1>Larry Murakami for Alaska</h1>
+
+Larry for Alaska<br>
+P.O. Box 58553 Fairbanks Alaska 99711<br>
+907-978-0260 <a href="http://LarryForAlaska.com/">LarryForAlaska.com</a>
+<form method="get" action="/Donate" target="_blank">
+<input type="submit" class="big-round-button" value="Donate" />
+</form>
+</center>
+ENDpaidForNotice
+
+my $m1 = <<ENDm1;
+
+<img src="http://LarryForAlaska.com/Larry4AK-gimp.jpg"
+ width="225" style="float: left; padding: 15px;"/>
+
+<h3>Check out <a href="http://LarryForAlaska.com" target=_top>my home page</a>.
+</h3>
+
+ENDm1
+
+my $m2 = <<ENDm2;
+
+<h1>I am no longer taking political donations.</h1>
+
+<h2>I am Larry Murakami</h2><br>
+<h3>I ran for the Alaska State House
+to represent the East side District of Fairbanks in 2014.
+</h3>
+
+ENDm2
+;
+
+my $m3 = <<ENDm3;
+
+<p>I have been a resident of Alaska since 1962 shortly after statehood and a resident of the Fairbanks area since my time in the Navy during the Vietnam War in the 1970s. I went to grade school at Browns Court School near Clear Alaska, graduated High School at Tri-Valley School in Healy, Alaska and received multiple degrees from the University of Alaska Fairbanks.
+
+<p>I retired from the <a href="https://en.wikipedia.org/wiki/Arctic_Region_Supercomputing_Center">Arctic Region Supercomputing Center</a> (ARSC), not coincidentally, the same day they ceased to exist on August 31, 2015.  ARSC was an institution of the University of Alaska Fairbanks and my position was funded by the Department of Defence.  Earlier this century I worked on Fort Wainwright as an Army Civilian.
+
+<p>I hope you will remember Larry Murakami as an advocate for the people of Alaska. 
+
+ENDm3
+; my $referer = '';
+
+my $uriD = $ENV{REQUEST_URI};
+if (length($uriD) > 50) {$uriD = substr($uriD,0,50).'...'}
+
+my $uri = p(). h3('Requested URL: <a href="' . $ENV{REQUEST_URI} . '">'
+                               . "\n" . $uriD . "</a>\n");
+
+if ($ENV{HTTP_REFERER}) {
+    my $hRef = $ENV{HTTP_REFERER}; my $dhRef = $hRef;
+    if (length($dhRef) > 50) {
+        $dhRef = substr($dhRef,0,50).'...'};
+        $referer = h3('Referer: <a href="' . $hRef . '">'
+                                  . "\n" . $dhRef . "</a>\n");
+    }
+
+LAM::displayPage('-m', '-t', 'Larry For Alaska', $h1Title
+, "\n$m1\n$referer\n\n$uri\n\n$m2$m3<br><br>$paidForNotice")

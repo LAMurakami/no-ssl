@@ -1,0 +1,69 @@
+#!/usr/bin/perl
+# $Id: PHPhtml.cgi-pl,v 1.9 2007/10/23 02:37:28 lam Exp lam $
+
+use LAM::LAM qw(displaySource displayPage htmlHead menuBar emailAddress
+                environmentVariables);                     # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                                 # Enable warnings.
+
+LAM::displaySource;                   # Display source, rlog, etc. if requested.
+
+my $programDescription = <<ENDprogramDescription
+
+<br><p>I created the PHPhtml.cgi-pl as a wrapper for the
+ <a href="/php/index.html">About PHP</a> html pages on my site.
+The program is actually written in Perl rather than PHP or Python because
+I am more familiar with Perl and genrally use Perl for CGI as well as system
+administration stuff.  I do however have both Python and PHP programs on my
+site so feel I should also have some documentation.
+This program wrapper adds the menuBar and style to the PHP html pages.
+I first edited index.html and preface.html then decided it would be easy
+ to write this script.  I ended up using a RewiteRule so that the .html files
+ are wrapped and the images in the php/figures/ are still available with
+ the same URL.
+When checking that a page with figures would work I found that the <a
+href="/php/internals2.ze1.zendapi.html#internals2.ze1.zendapi.fig.internal-struct" >
+Zend API page</a> was broken so I fixed it.  It now points to several of the
+largest figures.
+<br><br><p>
+The PHP documentation I downloaded was the html version and included 6,997 html
+ files and 33 images in .png format.  All the html files are in a single
+ directory and the images in a figures subdirectory.  The html documentation is
+ generated from docbook format and I should figure out who to tell about the
+ broken image links I found.
+<br><br><p>
+This text is displayed when the program is accessed without a query string.
+The RewiteRule puts the html file name in the query string and this program
+displays existing pages wrapped with my site header using the default style for
+my site.  This program transfers processing to the file not found program on
+my site for any URL not a valid documet in the /php
+directory.
+<br><br><p>
+A dump of all environment variables is included when this test is displayed
+which is a leftover from my process of creating this program in my current
+play development style.
+<br><br>
+ENDprogramDescription
+;
+my $queryString = '';
+if ($ENV{QUERY_STRING}) {$queryString = $ENV{QUERY_STRING};
+
+    if ($queryString =~ /^([\w\-\.]*)\.html/) {my $pageName = $1;      # If html
+        my $fileName = "/var/www/phphtml/$pageName.html";
+        if(-e $fileName) {                                      # test existance
+            my $text = LAM::getTextFile($fileName);
+            my $title = '';                                      # extract title
+            if ($text =~ /><HEAD\n><TITLE\n>([\w -]*)/s)  {$title = $1}
+            $text =~                                              # strip header
+s/.*<\/HEAD\n><BODY\nCLASS="\w*"\nBGCOLOR="\#FFFFFF"\nTEXT="\#000000"\nLINK="\#0000FF"\nVLINK="\#840084"\nALINK="\#0000FF"\n><DIV/<DIV/s;
+                                         # write page with site header and style
+            my $htmlTitle = 'LAM Alaska PHP manual - '. $title;
+            print LAM::htmlHead($htmlTitle), LAM::menuBar, "\n", $text
+                , a({-href=>"/"} , $ENV{SERVER_NAME}) , LAM::emailAddress;
+            exit(0) # Halt any further execution of program.
+        } else {exec('/var/www/html/Public/Scripts/Error-404.cgi-pl')} # not found
+    } LAM::displayPage('-t', 'LAM Alaska PHPhtml', 'LAM Alaska PHPhtml'
+        , '$queryString: '."$queryString")                                # Huh?
+} LAM::displayPage('-t', 'LAM Alaska PHPhtml', 'LAM Alaska PHPhtml' # no query string
+    , '', $programDescription. LAM::environmentVariables('lam'));

@@ -1,0 +1,49 @@
+/* LAM style sheet */
+/* $Id: Style.css,v 1.15 2016/10/29 22:39:22 lam Exp lam $ */
+
+html { font-family: Tahoma, Arial, sans-serif; margin-left: 5%; margin-right: 5%; }
+h1 { color: #397cbd; }
+h2 { color: #9b4703; }
+h3 { color: blue; }
+h4,h5,h6 { margin-left: -2%; margin-right: -2%}
+
+dt { color: #a02712}
+
+a[href]:hover { background: cyan }
+a:hover img { background: white }
+
+pre { color: black; background: #E6E6F9; font-family: monospace; border: solid; 
+  border-width: thin; padding: 0.5em;}
+
+/* Some class tag definitions */
+
+p.Right { text-align: right ; margin-top: 0 ; margin-bottom: 0; }
+
+img.floatLeft { float: left; margin: 4px; }
+img.floatRight { float: right; margin: 4px; }
+
+/* Top navigation bar Id and class definitions follow: */
+
+#top_nav { padding-top: 0px; margin-top: 0px; height:34px; align:right; }
+a.trigger { background-color: #537ab3; }
+#menuwrapper { color:#ffffff; margin-top:0; font-size:11px; width:100%;}
+.clearit { clear: both; height: 0; line-height: 0.0; font-size: 0; }
+#menuBar, #menuBar ul { background-color:#ADC1D8; z-index: 10;
+    margin-top:0; padding:0; margin-left: 14px; list-style:none;
+    text-align:left; }
+#menuBar a { color: #ffffff; padding: 5px 26px 6px 26px; display:block; }
+#menuBar a.trigger { margin-top:0; padding: 5px 26px 6px 26px; }
+#menuBar li { float: left; width: auto; }
+#menuBar li ul, #menuBar ul li  { width: 24em; }
+#menuBar ul li a { color:#003399; border-right: 0; padding-left: 5px; }
+#menuBar li ul { position: absolute; display: none; }
+#menuBar li:hover a, #menuBar li.fixIEhvr a { background-color:cyan; color:black; }
+#menuBar li:hover ul, #menuBar li.fixIEhvr ul { display: block; }
+#menuBar li:hover ul a, #menuBar li.fixIEhvr ul a { background-color: transparent; }
+#menuBar ul a:hover { background-color: cyan!important; color:black!important; }
+
+/* Big Round "Donate" Button class definitions follow: */
+
+.big-round-button { color: blue; background: gold; width:200px; height:48px; border:0;
+ font-family:'Helvetica Neue',sans-serif; font-size:24px; line-height:40px; border-radius:30px; }
+.big-round-button:hover { color: gold; background: #397cbd; }

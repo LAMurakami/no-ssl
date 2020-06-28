@@ -1,0 +1,162 @@
+<html><head>
+<!-- $Id$ -->
+
+<title>Linux Apache MariaDB in the cloud</title>
+
+<link rel="Shortcut Icon" href="/Images/My/LAM.ico" />
+<link rel="stylesheet" type="text/css" href="/Public/Style.css" />
+
+</head><body>
+
+<h1 >&nbsp;
+
+Linux Apache MariaDB in the cloud
+
+</h1>
+<br class="clearit">
+<!-- start content -->
+<div id="mw-content-text" lang="en" dir="ltr">
+<div>
+
+<h2><span id="About_LAM_AWS">About LAM AWS</span></h2>
+<p>This server instance is now running on a t3.nano instance under a prepaid 36 month reservation.  The $51.00 - 36 month prepaid rate is effectively $17.00 / year = $1.42 / month = $0.0466 / day = $0.00194 / hour.
+</p><p>The LAM AWS server supports a mediawiki installation as well as a home grown perl database web interface. These utilize a MariaDB server on the same machine.  The server is also used as an ssh proxy for browsing the web.  The server is mostly idle although memory usage runs at 75% on a t3.nano and nearly 50% on a t2.micro.
+</p><p>AWS applied the Free-Tier to calendar months and I started on the 4th. so I got almost 13 months discounted.  I paid $7.54 the 14th. month of a 24x7 web server with 335 hours of a t2.micro and 432 hours of a t3.nano as I switched to a smaller server instance while paying On Demand hourly pricing.  The next 36 months will still include charges for EBS, EFS, and bandwidth but will only include EC2 charges when I run a second server.  The total paid to AWS for the first 15 months of service averages to only $4 / month and since this includes the EC2 reservation good for 35 more months the average will continue to go down.
+</p>
+<h3><span id="aws.lam1.us_sites.lam1.us"><a rel="nofollow" href="http://aws.lam1.us">aws.lam1.us</a> <a rel="nofollow" href="http://sites.lam1.us">sites.lam1.us</a></span></h3>
+<p>The LAM AWS server instance was designed to utilize a t2.micro EC2 instance which is part of the Amazon Web services (AWS) Free Tier offering.  That offering includes 750 Hours / month of a t2.micro Elastic Compute Cloud (EC2) instance which is enough to run one instance 24/7.  The instance could scale up by using a larger and more capable server and other options or scale down to a t3.nano or other server sizes cheaper than a t2.micro except under the (AWS) Free Tier offering.  Multiple groups of virtual hosts can all run on one server or a separate server can be used for each group or single host.  Once the Free Tier is over the t2.micro server will cost less than $15.00 / month with the current sizing and usage On Demand and less than $5.00 / month if the t2.micro EC2 instance is reserved prepaid for 3 years.  A t3.nano is even less expensive and has passed testing supporting the web and proxy services by being my cloud host after t2.micro hours got more expensive.
+</p><p>A single LAM AWS server instance can host multiple websites, including a secure website, with Apache2 on Linux and includes MariaDB, Perl, Python, PHP and other common development tools.  Additional packages installed support running MediaWiki and more.  The LAM AWS server is built on the latest Ubuntu Server Amazon Machine Image (AMI) with an EBS General Purpose (SSD) Volume.  The resulting image is similar enough to the Linux Mint distribution I use on the newer machines at home and on my laptop so that cloning my MediaWiki and lam databases from the main server to either an aws instance or Linux Mint machine can be done with the same procedure.
+</p>
+<h2><span id="Launch_an_AWS_EC2_instance_from_the_command_line">Launch an AWS EC2 instance from the command line</span></h2>
+<p>On Ubuntu (and Linux Mint) the awscli package includes the aws command which includes the ability to launch a new instance.
+</p>
+<pre>aws ec2 run-instances --count 1 --image-id ami-0bbe6b35405ecebdb \
+--instance-type t3.nano --security-group-ids sg-3bda0647 \
+--associate-public-ip-address --key-name aws-nwo-lam1 --user-data \
+file:///var/www/html/Public/aws-nwo-lam1-Ubuntu-CloudInit.txt
+</pre>
+<h3><span id="LAM_AWS_command_line_options">LAM AWS command line options</span></h3>
+<dl><dt>Launch a single ec2 instance of the t3.nano type which is cheapest or of the t2.micro type which is part of the AWS Free Tier offering.</dt>
+<dd>aws ec2 run-instances --count 1 --instance-type t3.nano</dd>
+<dt>Get a public IP address and launch using my key</dt>
+<dd>--associate-public-ip-address --key-name aws-nwo-lam1</dd>
+<dt>Use a predefined security group</dt>
+<dd>--security-group-ids sg-3bda0647</dd>
+<dt>Use the latest Ubuntu Server image</dt>
+<dd>--image-id ami-0bbe6b35405ecebdb</dd>
+<dt>Specify the file with the user data&#160;</dt>
+<dd>--user-data file://&lt;file name&gt;</dd></dl>
+<h3><span id="LAM_AWS_user-data_is_a_set_of_Ubuntu_CloudInit_directives">LAM AWS user-data is a set of Ubuntu CloudInit directives</span></h3>
+<p>The LAM AWS server is initialized with Ubuntu CloudInit directives to install the necessary packages, configuration and content on top of a generic Ubuntu Server image.  All the directives in a file can be specified with the CLI user-data parameter or in Advanced Options of the launch page from the AWS web console.  The directives can also be pasted into the text box when using the web console.  The Ubuntu CloudInit package is a great tool for AWS EC2 initialization and is another reason to use an Ubuntu Server ami rather than one of the other available types.
+</p>
+<h4><span id="Instance_to_take_over_lam1">Instance to take over lam1</span></h4>
+<p>The main initialization directives update the Ubuntu server to support all the virtual hosts of the LAM AWS cloud and automatically assume the lam1 domain subset of hosts.  Additional <a href="/a/Dynamic_Domain_Name_Service#Check-in_from_a_Linux_host" title="Dynamic Domain Name Service">Dynamic Domain Name Service#Check-in from a Linux host</a> operations can be performed to take over more or all of the lam1 domain subsets.
+</p>
+<h4><span id="Instance_to_be_a_SSH_SOCKS5_Proxy_server_on_port_433">Instance to be a SSH SOCKS5 Proxy server on port 433</span></h4>
+<p>The AWS CLI directives are the same to launch either type of instance.  I am using different versions of the same file in a single RCS archive for the two instance types.  As of February 2019 the two current versions are:
+</p>
+<ul><li>co -r1.49 /var/www/html/Public/aws-nwo-lam1-Ubuntu-CloudInit.txt # Revision 1.49 Latest lam1.duckdns.org</li>
+<li>co -r1.48 /var/www/html/Public/aws-nwo-lam1-Ubuntu-CloudInit.txt # Revision 1.48 Latest lam2.duckdns.org</li></ul>
+<p>Port 433 is normally used for HTTPS so is likely to be available even when other ports are blocked.
+</p>
+<h2><span id="LAM_AWS_resources">LAM AWS resources</span></h2>
+<p>A volume in the AWS Elastic File System (EFS) in my default USA NW Oregon region is used as a NFS mounted parallel file system.  The security group definition allows traffic on the port for this service only within the Virtual Private Cloud.
+</p>
+<h3><span id="Use_a_predefined_security_group">Use a predefined security group</span></h3>
+<p>The security group definition controls the traffic within the Virtual Private Cloud and with the outside world.  I use the same security group definition for both images with only a limited number of inbound ports open.  The definition details are:
+</p>
+<ul><li>Inbound Port 2049 Custom TCP Rule - NFS for EFS - 172.31.0.0/16</li>
+<li>Inbound Port 22 TCP Rule - SSH from VPC - 172.31.0.0/16</li>
+<li>Inbound Port 80 Custom TCP Rule - HTTP - 0.0.0.0/0</li>
+<li>Inbound Port 443 Custom TCP Rule - HTTPS or SSH on an Alternate port - 0.0.0.0/0</li>
+<li>Inbound Port 55520 Custom TCP Rule - SSH on an Alternate port - 0.0.0.0/0</li>
+<li>Inbound Port 55593 Custom TCP Rule - IMAPS on an Alternate port - 0.0.0.0/0</li>
+<li>Outbound Port 2049 Custom TCP Rule - NFS for EFS - 172.31.0.0/16</li>
+<li>Outbound All/All 0.0.0.0/0</li></ul>
+<p>This security group definition allows web traffic on the standard ports from the public interface (0.0.0.0/0), Secure Shell on an alternate high numbered port and IMAPS on an alternate high numbered port.  The security group definition allows Secure Shell on the standard port and NFS traffic only on the private interface (172.31.0.0/16).  The SSH SOCKS5 Proxy instance uses the same security group definition but is accepting Secure Shell traffic on the port that is normally used for Secure Web (HTTPS) traffic.  The security group definition does allow outgoing traffic from the server over the public interface.
+</p>
+<h3><span id="Use_a_persistent_parallel_file_system">Use a persistent parallel file system</span></h3>
+<p>An EFS directory is used by the Ubuntu CloudInit directives during initialization of my AWS EC2 instances.  The nfs-common additional package is required to mount the persistent Amazon Web Services Elastic File System.  Once the nfs-common package is installed the nfs4 mount can be implemented.  Since an additional package is required the mount is performed within the runcmd section and cannot be run earlier in the bootcmd section.  I also use the rcs package runcmd segment that mounts the EFS file system:
+</p>
+<pre>echo
+echo Adding nfs4 mount to AWS NW-O VPC Elastic File System
+mkdir /mnt/efs
+chown ubuntu:ubuntu /mnt/efs
+mkdir /etc/RCS
+ci -l -t-"File System table for LAM AWS web and shell server" /etc/fstab
+nfsOpt="nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0"
+echo "fs-6f45fac6.efs.us-west-2.amazonaws.com:/ /mnt/efs nfs4 ${nfsOpt}" &gt;&gt; /etc/fstab
+rcsdiff -U0 /etc/fstab
+ci -l -m"Added nfs4 mount to AWS NW-O VPC Elastic File System" /etc/fstab
+mount -a -t nfs4
+</pre>
+<p>The fs-6f45fac6 unique resource identifier is part of the virtual host name used to access the AWS Elastic File System (EFS) in my default USA NW Oregon region.
+</p>
+<h2><span id="Log">Log</span></h2>
+<ul><li>Monday, February 4, 2019 - Purchased a 36 month t3.nano reservation for $51.00</li>
+<li>Sunday, January 6, 2019 my 12 Month Free-Tier offerings have expired and I pay for a lot more.
+<ul><li>I will switch to a t3.nano instead of a t2.micro soon before getting a reserved instance.  I have not decided how long to run on demand instances to see actual billing.</li>
+<li>So far it looks like total on demand costs are going to be less than $12.00 / month for the t2.micro and less than $6.00 / month for a t3.nano instance.</li></ul></li>
+<li>Sunday, July 1, 2018 @ 4:02:51 PM (Alaska Time) Published using: <a href="/a/Stand_alone_from_MediaWiki_page" title="Stand alone from MediaWiki page">Stand alone from MediaWiki page</a>
+<ul><li>To aws:/var/www/no-ssl/About/index.html which is a symbolic link to the latest version.</li></ul></li>
+<li>Tuesday, April 10, 2018 @ 11:14:21 PM (Alaska Time) - Published to <a rel="nofollow" href="http://aws.lam1.us/About">http://aws.lam1.us/About</a></li>
+<li>Tuesday, March 20, 2018 (Alaska Time) - I created a set of Ubuntu CloudInit directives to start a proxy server that I could use when connected to the Internet via the WiFi at the Playa Grande Resort in Cabo San Lucas, Baha California, Sur, Mexico.
+<ul><li>This WiFi was blocking port 22 and other ports including some of my email servers. For this instance I configured ssh to use port 443 because both ports 80 and 443 were open for http and https traffic. I left Apache configuration less the HTTPS configuration.</li>
+<li>Ubuntu Server 16.04 LTS (HVM), SSD Volume Type - ami-4e79ed36</li></ul></li>
+<li>Sunday, December 3, 2017 (Alaska Time) I signed up for <a href="/a/Amazon_Web_Services_(AWS)" title="Amazon Web Services (AWS)">Amazon Web Services (AWS)</a></li></ul>
+
+<!-- 
+NewPP limit report
+Cached time: 20190220052433
+Cache expiry: 86400
+Dynamic content: false
+CPU time usage: 0.028 seconds
+Real time usage: 0.029 seconds
+Preprocessor visited node count: 43/1000000
+Preprocessor generated node count: 48/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/40
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+</div>
+<!-- Saved in parser cache with key wikidb:pcache:idhash:315-0!canonical and timestamp 20190220052433 and revision id 4559
+ -->
+</div>
+<!-- end content -->
+
+<div id="toc"><div lang="en" dir="ltr"><h2>Contents</h2></div><div>
+Retrieved from "<a dir="ltr" href="https://ak17.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=4559">https://ak17.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=4559</a>"</div>
+<ul>
+<li><a href="#About_LAM_AWS">1 About LAM AWS</a>
+<ul>
+<li><a href="#aws.lam1.us_sites.lam1.us">1.1 aws.lam1.us sites.lam1.us</a></li>
+</ul>
+</li>
+<li><a href="#Launch_an_AWS_EC2_instance_from_the_command_line">2 Launch an AWS EC2 instance from the command line</a>
+<ul>
+<li><a href="#LAM_AWS_command_line_options">2.1 LAM AWS command line options</a></li>
+<li><a href="#LAM_AWS_user-data_is_a_set_of_Ubuntu_CloudInit_directives">2.2 LAM AWS user-data is a set of Ubuntu CloudInit directives</a>
+<ul>
+<li><a href="#Instance_to_take_over_lam1">2.2.1 Instance to take over lam1</a></li>
+<li><a href="#Instance_to_be_a_SSH_SOCKS5_Proxy_server_on_port_433">2.2.2 Instance to be a SSH SOCKS5 Proxy server on port 433</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#LAM_AWS_resources">3 LAM AWS resources</a>
+<ul>
+<li><a href="#Use_a_predefined_security_group">3.1 Use a predefined security group</a></li>
+<li><a href="#Use_a_persistent_parallel_file_system">3.2 Use a persistent parallel file system</a></li>
+</ul>
+</li>
+<li><a href="#Log">4 Log</a></li>
+</ul>
+</div>
+</body></html>

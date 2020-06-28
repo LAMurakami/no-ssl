@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+# $Id: menuBar.cgi-pl,v 1.13 2016/10/24 08:00:04 lam Exp lam $
+
+use LAM::LAM qw(displaySource htmlHead menuBar
+                                            emailAddress); # Lexicon Abstact Map
+use LAM::Multicount qw(webPageCounter);
+use CGI qw(:all);                               # CGI - Load standard functions.
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                             # Enable all warnings.
+
+LAM::displaySource;                   # Display source, rlog, etc. if requested.
+
+my $programDescription = <<ENDprogramDescription
+
+<br><br><p> I originally created the menuBar.cgi-pl program to test the display
+of the appropriate menuBar on my site.  The program was modified to make the
+program a wrapper for html pages on my site.  This program adds the menuBar
+and style to the pages much like the MySQLhtml.cgi-pl and previous wrapper
+programs I have written.  Which pages it is applied to will be controlled
+by RewiteRule directives and the Apache server configuration.
+
+
+<br><br><p> This text is displayed when the program is accessed with a URL
+that does not point to an appropriate html file.
+
+<br><br>
+ENDprogramDescription
+;
+
+
+REWRITE:{
+if ($ENV{RewriteHtml}) {my $rewriteHtml = $ENV{RewriteHtml};
+
+     if ($rewriteHtml =~ /^\/menuBar.html/) {last REWRITE};
+
+     my $fileName = "$ENV{DOCUMENT_ROOT}$rewriteHtml";
+     my $text = LAM::getTextFile($fileName);
+
+     my $title = 'LAM Alaska menuBar';
+     if ($text =~ /<title\s*>(.+)<\/title\s*>/is)  {$title = $1}
+
+     print LAM::htmlHead('-i', 'LAM', $title), "\n", LAM::menuBar, "\n", $text
+    , hr() ,Multicount::webPageCounter('-u'), br()
+    , "\n", "Uptime: ", qx(uptime), "\n<br>"
+    , "\n$ENV{REMOTE_ADDR} $ENV{REQUEST_METHOD} from server \n"
+    , a({-href=>"/",-name=>"tail"} , $ENV{SERVER_NAME}) , LAM::emailAddress();
+     exit(0) # Halt any further execution of program.
+
+}} LAM::displayPage('-t', 'LAM Alaska menuBar',   # Display program description
+ 'LAM Alaska menuBar', '', $programDescription);        # when no query string

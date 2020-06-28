@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+# $Id: Test.cgi-pl,v 1.1 2007/09/27 09:13:32 lam Exp lam $
+
+use LAM::LAM qw(displaySource displayPage namedParameters viewFormData
+                getTextFile);
+use LAM::Multicount qw(webPageCounter);
+use CGI qw(:all); # CGI - load standard functions
+use strict;     # Force me to use strict variable syntax.
+use warnings;  # Enable all warnings.
+
+LAM::displaySource(); # Display source, rlog, etc. if requested.
+
+if (param('Submit')) { my $submitRequest = param('Submit');
+	if ($submitRequest eq 'View Form Data') {LAM::viewFormData()}
+	elsif ($submitRequest eq 'displayPage') {
+        my $path = ''; my $scriptName = '';
+        my $scriptFileName = $ENV{SCRIPT_FILENAME};
+        if ($scriptFileName =~ /(.*)\/(.*)/) {$path = $1; $scriptName = $2}
+
+my $programSource = LAM::getTextFile($ENV{SCRIPT_FILENAME});
+      
+      LAM::displayPage('-c', '', b('Program Source')
+      , textarea({-name=>'Program Source', -rows=>40, -columns=>85,
+       -wrap=>'soft', -value=>$programSource, -READONLY=>1}))
+
+	} # Report request that this program is unprepared for as error
+	LAM::displayPage('-e', '-c', 'Unknown request!',
+	  '$submitRequest: ' . "$submitRequest<br />\n" . LAM::namedParameters())
+} else { # No Submit button was used => Display the form
+my $formText = start_form() . div({-align=>'center'}
+    , submit({-name=>'Submit',-value=>'displayPage'}). "\n". reset()
+    . submit({-name=>'Submit',-value=>'View Form Data'}). br().
+	"\n". LAM::namedParameters());
+LAM::displayPage('-c', '<center>Test</center>', $formText)}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|

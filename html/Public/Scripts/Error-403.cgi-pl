@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+# $Id: Error-403.cgi-pl,v 1.2 2009/01/11 09:48:43 lam Exp lam $
+
+use LAM::LAM qw(displaySource displayPage);                # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                                 # Enable warnings.
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+my $errorType
+ = '403 Access forbidden!';            # 403 Access forbidden! http server error
+
+my $m1 =                           '<h2> Unable to access the requested object.'
+. "</h2>\n"; my $m2 = <<ENDm2;
+<p>
+
+This error can occur on <a href="http://sites.lam1.us/">a LAM AWS site</a>
+if the published link points to an object not currently readable by the server.
+This site uses
+
+<b>symbolic links</b>
+
+to point to objects that may be on a separate resource such as a remote	mount.
+You see the current remote mounts with the "
+<a href="/df">File system disk space usage report</a>".
+<p>
+If you think this is a server error I should address, please contact me using
+the Server Admin email address for this site.
+
+ENDm2
+; my $referer = ''; my $m3 = <<ENDm3;
+
+If the content is not available on the secure side of this site, check for
+ errors in the URL.
+
+ENDm3
+; my $uriD = $ENV{REQUEST_URI};
+if (length($uriD) > 50) {$uriD = substr($uriD,0,50).'...'}
+my $URL = $ENV{SERVER_NAME} . $ENV{REQUEST_URI}; my $dURL = $URL;
+if ((length($dURL) > 60) and ($dURL =~ /(.*)\?(.*)/)) {$dURL = "$1 ?$2"}
+my $secureURL = '<a href="https://' . $URL . '">https://' . $dURL .'</a>';
+my $text2 = "Try: $secureURL";
+my $uri = p(). h3('Request: '. a({-href=>$ENV{REQUEST_URI}}, "\n". $uriD)."\n");
+if ($ENV{HTTP_REFERER}) { my $hRef = $ENV{HTTP_REFERER}; my $dhRef = $hRef;
+     if (length($dhRef) > 50) {$dhRef = substr($dhRef,0,50).'...'}
+    $referer = h3('Referer: '. a({-href=>$hRef}, "\n" . $dhRef) . "\n")}
+
+LAM::displayPage('-c', '-t', 'LAM AWS', 'LAM AWS'
+, "\n$m1\n$uri\n\n$referer\n". h3("\n$text2\n"). "\n$m3$m2<p><b>$errorType</b>"
+. "<br>$ENV{SERVER_SIGNATURE}")

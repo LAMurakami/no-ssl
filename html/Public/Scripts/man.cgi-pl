@@ -1,0 +1,90 @@
+#!/usr/bin/perl
+# $Id: man.cgi-pl,v 1.31 2017/08/01 09:48:16 lam Exp lam $
+
+use LAM::LAM qw(displaySource displayPage viewFormData);   # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                                 # Enable warnings.
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+if (not defined $ENV{'REMOTE_USER'}) {     # If not an authenticated remote user
+   $ENV{'MANPATH'} = '/usr/local/share/man:/usr/share/man';        # Set MANPATH
+}                                                 # to omit /usr/local/man pages.
+
+my $scriptName = $ENV{SCRIPT_FILENAME};               # Use script name in title
+    if ($scriptName =~ /.*\/(.*)\.cgi-pl/) {$scriptName = $1}          # trimmed
+my $n = $#ARGV+1;   # man2html creates links with unnamed arguments so check for
+if ($n > 0) {if ($ARGV[0] =~ /(\d\w*)/) { my $section = $1;  # digit[word char]*
+        my $keyword = $ARGV[1];
+        if ($keyword =~ /(\w(\w|:|-|\+|_|\.)*(\s+\w(\w|:|-|\+|_|\.)*)*)/) {# words
+            my $wordsOnly = $1; my $manFile = checkMan("$section $wordsOnly");
+}   }   }                         # If we recieved unnamed arguments we are done
+my $keyword = $scriptName;                  # Use script name as default keyword
+    if (param('Keyword')) {$keyword = param('Keyword')}         # get user input
+my $wordsOnly = '';                                         # Untaint user input
+    if ($keyword =~ /((\d\w*\s+)?\w(\w|:|-|\+|_|\.)*(\s+\w(\w|:|-|\+|_|\.)*)*)/) {
+    $wordsOnly = $1} my $submitRequest = '';              # Handle Submit Option
+if (param('Submit')) { my $submitRequest = param('Submit');         # if present
+    if ($submitRequest eq 'View Form Data') {LAM::viewFormData()}
+    if ($submitRequest eq 'Help') {thisHelp()} # Offer help for form and program
+    my $manFile = checkMan($wordsOnly);
+} else {                         # No Submit button was used => Display the form
+    LAM::displayPage('-c', '-t', 'What manual page do you want?'
+    , 'What manual page do you want?'
+    , start_form({-method=>"GET"})                 # Show form parameters in URL
+    . "\nKeyword: ". textfield({-name=>'Keyword', -maxlength=>255, -size=>80,
+    -value=>'man2html'})
+    . br(). br(). "\n". "\n". br() . div({-align=>'center'}     # Submit options
+        , submit({-name=>'Submit',-value=>'View'}), "\n", reset()
+        , submit({-name=>'Submit',-value=>'View Form Data'}), "\n"
+        , submit({-name=>'Submit', -value=>'Help'}), br(), "\n"))}    # End main
+sub checkMan {my $keyword =shift; # Check for man pages using specified keywords
+    my $text = `man -w $keyword 2>&1`; my $manFileName = '';
+manTest: {     # Test output from man and return man filename or report an error
+    if ($text =~ /(\/.*\.(bz2|gz))/) { $manFileName = $1;  # file type we know
+        my $fileCompressionType = $2;
+    if (not -e $manFileName) {LAM::displayPage('-e', "File not found!"   # Error
+        , 'Input: ' . $keyword . br() . "\n" , 'File name: ' . $manFileName
+        . br() . "\n" . 'Result from man: ' . "\n" . pre($text)); last manTest;}
+ else {           # We found a man file that we can convert to html for display.
+
+     my $man2htmlFix = '/var/www/no-ssl/html/Public/Scripts/man-sed.txt';
+     my $man2html = 'man2html -H q.lam1.us -M /man 2>&1';
+     my $manPage = '';
+     if ($fileCompressionType =~ /bz2/) {
+$manPage = `bunzip2 -c $manFileName | $man2htmlFix | $man2html`;}
+     if ($fileCompressionType =~ /gz/) {
+$manPage = `gunzip -c $manFileName | $man2htmlFix | $man2html`;}
+
+my $manTitle = '';
+$manPage =~ s/; charset=UTF-8//;                # Strip the leading charset line
+$manPage =~ s/\\{2}fb(.*)\\{2}fr/$1/ig;     # Strip font stuff that gets through
+$manPage =~ s/\\fb(.*)\\fr/$1/ig;                 # one or two matching slashes?
+if ($manPage =~ /<TITLE>(.*)<\/TITLE>/) {$manTitle = $1};        # extract title
+$manPage =~ s/Content-type: text\/html//;           # strip original head part 1
+$manPage =~ s/<HTML><HEAD>(.*)<\/HEAD><BODY>//s;    # strip original head part 2
+$manPage =~ s/(<HR>\nThis document was created by(.*)<\/HTML>)//s;  # strip tail
+$manPage =~ s/>Return to Main Contents<\/A><HR>/>Return to man form<\/A>/;
+$manPage =~ s/http:\/\/q.lam1.us\//\//g;    # Use relative so we stay https
+my $upArrow = img({-alt=>'up',-border=>0,-src=>'/Public/gif.jpg/ScrollUp.gif'});
+LAM::displayPage('-t', $manTitle, '', '', $manPage. a({-href=>'#top'}, $upArrow
+. "\nTop of this document\n". $upArrow). ' - This page was generated with '
+. a({-href=>'/man'}, 'man'). ' and '. a({-href=>'/man/man2html'}, 'man2html')
+. '.');
+exit(0); last manTest;}} # displaypage() with LAM:: style - All the work is done!
+    if ($text =~ /^No /) { LAM::displayPage('-t',"No $keyword man!", 'No '
+        . a({-href=>"/whatis/$keyword"}, $keyword) . ' ' . a({-href=>"/man"}
+        , 'man') . '!' , 'Input: ' . $keyword . br() . "\n" . 'Result from man: '
+        . "\n" . pre($text)); last manTest;}
+    if ($text !~ /(^No |\.(bz2|gz)$)/) { LAM::displayPage('-e', 'Unexpected output'
+        , 'Input: ' . $keyword . br() . "\n"                               # Huh
+        . 'Result from man: ' . "\n" . pre($text))}}            # end - manTest:
+}                                                               # end checkMan()
+sub thisHelp {    $ENV{'LANG'} = 'en_US.UTF-8';   # Set language
+LAM::displayPage('-t', 'Manpage Help'  # Help for form and program
+    , center(a({-href=>'http://en.wikipedia.org/wiki/Man_page'}, 'Man_page')
+    , ' Help'), 'Input: ' . $keyword . br() . "\n"        # Show UnTaint results
+    . 'Untainted input: ' . $wordsOnly . br(). "\n". center(h2("\n\n<nobr> &nbsp; ". a(
+    {-href=>'/whatis/man+man2html'}, 'whatis') . ' ' . a({-href=>'/man?man2html'}
+    ,'man man2html').' &nbsp; </nobr>')).hr()."\n",pre("\n".`whatis man man2html 2>&1`))
+}                                                 # end thisHelp() - That's all!

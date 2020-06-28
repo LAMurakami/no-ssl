@@ -1,0 +1,64 @@
+#!/usr/bin/perl
+# $Id: whatis.cgi-pl,v 1.19 2008/02/12 02:07:45 lam Exp lam $
+
+use LAM::LAM qw(displaySource displayPage viewFormData);   # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                             # Enable all warnings.
+
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+$ENV{'LANG'} = 'en_US.UTF-8';      # Set language for access to whatis database.
+
+my $scriptName = $ENV{SCRIPT_FILENAME};               # Use script name in title
+    if ($scriptName =~ /.*\/(.*)\.cgi-pl/) {$scriptName = $1}          # trimmed
+my $keyword = $scriptName;                  # Use script name as default keyword
+    if (param('Keyword')) {$keyword = param('Keyword')}         # get user input
+my $wordsOnly = '';                                         # Untaint user input
+    if ($keyword =~ /(\w(\w|-|_)*(\s+\w(\w|-|_)*)*)/) {$wordsOnly = $1}
+my $searchType = 'whatis';
+    if (param('Search type')) {$searchType = param('Search type')}
+
+my $submitRequest = '';                                   # Handle Submit Option
+if (param('Submit')) { my $submitRequest = param('Submit');         # if present
+    if ($submitRequest eq 'View Form Data') {LAM::viewFormData()}
+    if ($submitRequest eq 'Help') {thisHelp()} # Offer help for form and program
+
+    my $text = '';
+
+    if ($searchType =~ /(whatis|both)/) {$text .= center(h2(a({-href=>  # whatis
+        "/whatis?Search+type=whatis&Keyword=$wordsOnly"}, "\n\nwhatis"), ' '
+        , a({-href=>"/whatis/$wordsOnly"}, $wordsOnly)));
+        $text .= pre("\n" . `whatis $wordsOnly 2>&1`)}
+    if ($searchType =~ /(apropos|both)/) {$text .= center(h2(a(        # apropos
+        {-href=>"/whatis?Search+type=both&Keyword=$wordsOnly"},"\n\napropos")
+        ,' ', a({-href=>"/apropos/$wordsOnly"} , $wordsOnly)));
+        $text .= pre("\n" . `apropos $wordsOnly 2>&1`)}
+        
+    LAM::displayPage('-c', '-t', $scriptName. ' ' . $wordsOnly, '', '', $text)
+            
+} else {                         # No Submit button was used => Display the form
+    LAM::displayPage('-c', '-t', "$scriptName Form"
+    , '', start_form({-method=>"GET"})                  # Show parameters in URL
+    . "\nKeyword: "
+    . textfield({-name=>'Keyword', -maxlength=>255, -size=>80,      # User input
+    -value=>'whatis apropos'})
+    . br(). br(). "\n". "\n". br() . radio_group({-name=>'Search type',
+    -values=>['whatis','apropos','both'], -default=>'both'})
+    . br() . br() . "\n" . div({-align=>'center'}               # Submit options
+        , submit({-name=>'Submit',-value=>'View'}), "\n"
+        , reset()
+        , submit({-name=>'Submit',-value=>'View Form Data'}), "\n"
+        , submit({-name=>'Submit', -value=>'Help'}), br(), "\n"))} # That's all!
+
+sub thisHelp {                                       # Help for form and program
+    LAM::displayPage('-t', "$scriptName Help" , center(a({-href=>
+    'http://en.wikipedia.org/wiki/Whatis'}, $scriptName)," Help\n")
+    , 'User input: ' . $keyword . br() . "\n"             # Show UnTaint results
+    . 'Untainted user input: ' . $wordsOnly . br() . "\n"
+    . 'Search type: ' . $searchType . br() . "\n"
+    . center(h2("\n\n<nobr> &nbsp; " , a({-href=>'/whatis'} , 'whatis') , ' '
+    , a({-href=>'/whatis/whatis+apropos'}, 'whatis apropos')
+    .' &nbsp; &nbsp; </nobr>'))
+    . hr() . "\n", pre("\n" . `whatis whatis apropos 2>&1`))
+}                                                                  # That's all!

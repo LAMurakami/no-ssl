@@ -1,0 +1,36 @@
+#!/usr/bin/perl
+# $Id: Error-404.cgi-pl,v 1.7 2008/04/06 03:50:22 lam Exp lam $
+
+use LAM::LAM qw(displaySource displayPage);                # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                                 # Enable warnings.
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+my $errorType = '404 Not Found!';        # 404 Page Not Found! http server error
+
+my $m1 =                                '<h2> The requested page was not found.'
+. "</h2>\n"; my $m2 = <<ENDm2;
+<p>
+
+If you are not sure it is on my site you could try
+<a href="https://DuckDuckGo.com" target="_blank">a search engine</a> or 
+<a href="http://en.wikipedia.org/wiki/Main_Page" target="_blank">
+<img src="/Images/Wikipedia-logo-en.png" alt="Wikipedia" border=0></a>
+ENDm2
+; my $referer = '<br><br>'; my $m3 = <<ENDm3;
+
+Check for
+ errors in the URL.
+
+ENDm3
+; my $uriD = $ENV{REQUEST_URI};
+if (length($uriD) > 50) {$uriD = substr($uriD,0,50).'...'}
+my $uri = p(). h3('Request: '. a({-href=>$ENV{REQUEST_URI}}, "\n". $uriD)."\n");
+if ($ENV{HTTP_REFERER}) { my $hRef = $ENV{HTTP_REFERER}; my $dhRef = $hRef;
+     if (length($dhRef) > 50) {$dhRef = substr($dhRef,0,50).'...'}
+    $referer = h3('Referer: '. a({-href=>$hRef}, "\n" . $dhRef) . "\n")}
+
+LAM::displayPage('-c', '-t', 'Interior Democrats'
+, '<a href="/">Interior Democrats</a>'
+, "\n$m1\n$uri\n\n$referer\n\n$m3$m2<br><br>$errorType")

@@ -1,0 +1,266 @@
+#!/usr/bin/perl
+# $Id: Error-Logs-Test.cgi-pl,v 1.11 2007/09/12 07:41:23 root Exp root $
+
+use CGI qw(:all);                               # CGI - Load standard functions.
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                             # Enable all warnings.
+
+$ENV{PATH} = '/bin:/usr/bin';      # untaint path for system call for file data.
+
+displaySource();                      # Display source, rlog, etc. if requested.
+
+my $lines = '20';                   # Define global variables - lines to display
+my @logfiles = ('All Apache error logs',                   # - Apache error logs
+            '/var/log/apache2/access.log', '/var/log/apache2/error.log',
+            '/var/log/apache2/sites_access_log', '/var/log/apache2/sites_error_log',
+            '/var/log/apache2/arsc_access_log', '/var/log/apache2/arsc_error_log',
+            '/var/log/apache2/blinkenshell_access_log', '/var/log/apache2/blinkenshell_error_log',
+            '/var/log/apache2/cabo_access_log', '/var/log/apache2/cabo_error_log',
+            '/var/log/apache2/larryforalaska_access_log', '/var/log/apache2/larryforalaska_error_log',
+            '/var/log/apache2/mike_access_log', '/var/log/apache2/mike_error_log',
+            '/var/log/apache2/olnes_access_log', '/var/log/apache2/olnes_error_log',
+            '/var/log/apache2/z_access_log', '/var/log/apache2/z_error_log',
+            '/var/log/apache2/other_vhosts_access.log');
+
+
+if (param('Submit')) {                        # Handle Submit Option if supplied
+    my $submitRequest = param('Submit');
+    if ($submitRequest eq 'View Form Data') {viewFormData()};
+    if ($submitRequest eq 'View Error Logs') {displayErrorLogs()};
+    if ($submitRequest eq 'View') {displayErrorLogs()};            # Shorter URL
+
+    if ($submitRequest eq 'View Named Parameters') {namedParameters(1)};
+
+displayPage('-e', 'Unknown option!',        # and report unknown option as error
+  '$submitRequest: ' . "$submitRequest<br />\n" . namedParameters())
+
+} else {displayPage('Display Apache error logs',           # or Display the form
+    start_form({-method=>"GET"}). "\nLines to display: "      # using GET method
+    . textfield({-name=>'Lines', -maxlength=>16, -size=>5, -value=>"20"})
+    . br() . br() . "\n" . "\nLogs to display: " . popup_menu(-name=>'Logs',
+    -values=>\@logfiles, -default=>$logfiles[0]) . br() . br() . "\n"
+    . "\nSpecial text processing: " . "\n"
+    . radio_group({-name=>'Special text processing',
+    -values=>['None','Split referer','Drop referer'], -default=>'Drop referer'})
+    . br() . br() . "\n".
+    div({-align=>'center'}, "\n"                           # with Submit options
+    , submit({-name=>'Submit', -value=>'View Error Logs'}), "\n"
+    , reset(), "\n"
+    , submit({-name=>'Submit', -value=>'View Form Data'}), "\n"
+    , submit({-name=>'Submit', -value=>'Help'}), "\n"
+    , submit({-name=>'Submit', -value=>'View Named Parameters'})
+    , br(), "\n"))}             # End - Handle Submit Option or Display the form
+
+sub displayErrorLogs {  # Main function of this program is to display error logs
+my $logsToDisplay = $logfiles[0]; my $checkFile = $logsToDisplay;
+if (param('Logs')) {$logsToDisplay = param('Logs')}
+if ($logsToDisplay eq $logfiles[0]) {$checkFile = $logfiles[1]} # For first file
+ else {$checkFile = $logsToDisplay}                          # or specified file
+
+if (-r $checkFile) {                        # Check that program has read rights
+    print header('text/plain'); $ENV{'PATH'} = '/bin:/usr/bin';   # Untaint path
+    if (param('Lines')) {$lines = param('Lines')} # If lines parameter specified
+    if ($lines =~ /(\d+)/) {$lines = "$1"}                  # Untaint user input
+    if ($logsToDisplay ne $logfiles[0]) {doLog($logsToDisplay)}  # Specified log
+    else {for (my $i = 1; $i < @logfiles; $i++){doLog($logfiles[$i])}   # or all
+    exit(0)}     # Halt any further execution of program if output was generated
+
+} else {displayPage('-e', 'Insufficient Rights!', 'Cannot read file: '
+ . $checkFile . "<br />\nTry:<pre>"     # Report an error if Insufficient Rights
+ .'# Set root as program owner'."\n".'$ sudo chown root '. $ENV{SCRIPT_FILENAME}
+ ."\n# Set root as program group\n". '$ sudo chgrp root '. $ENV{SCRIPT_FILENAME}
+ ."\n# Set program to run under onwers permission\n". '$ sudo chmod 4755 '
+ . $ENV{SCRIPT_FILENAME}."</pre>\n" . namedParameters())}}
+
+sub doLog {my $thislog = shift; my $text = `tail -$lines $thislog`;   # get logs
+
+my $specialTextProcessing =	'Drop referer';
+if (param('Special text processing')) {   # If Special text processing requested
+	my $specialTextProcessing = param('Special text processing')}
+if ($specialTextProcessing eq 'Split referer') {
+	$text =~ s/, referer:/\n , referer:/g}     # Split referrer: to second line
+if ($specialTextProcessing eq 'Drop referer') {
+	$text =~ s/, referer:.*//g}                                # Drop referrer:
+
+print "===== last $lines lines of $thislog =====\n", $text ,    # output as text
+      "===== end of $thislog =====\n"}               # with text file delimiters
+
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub emailAddress { return
+ p({-align=>'right'}, "\n", timemark() , br(), "www.ServerAdmin\@lam-ak.com\n")}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub displayPage { my $optError=1; my $opt_head=1;
+while ($_[0] =~ m/^-([ehc])/) { my $option = $1;    # While optional parameters
+    if ($option eq 'e') {$optError=0} # -e specified that this is an error page
+    if ($option eq 'h') {$opt_head=0} # -h specifies omit the html header
+    shift}
+my $headerText = my $bodyText = my $tailText = '';
+my $i = 0; my $parameterCount = @_;
+while ($parameterCount > $i++) {  # While positional parameters
+    if    ($i eq 1) {$headerText=shift}
+    elsif ($i eq 2) {$bodyText=shift}
+    elsif ($i eq 3) {$tailText=shift}
+}
+use File::Basename;
+my $scriptName = basename($ENV{SCRIPT_FILENAME});
+my $html_title = $scriptName;
+my $path = dirname($ENV{SCRIPT_FILENAME});
+my $docRoot = '/var/www/html';
+if ($path =~ /($docRoot)(.*)/) {$path = $2} # Strip document root from path
+if ($path =~ /(.*)\/$/) {$path = $1} # Strip trailing slash if present
+my $pageHeader = "\n$path/\n" . # Include link to program comments
+    a({-href=>"/Comments.cgi-pl?Submit=View;Topic=Program;Name=$scriptName"}
+    , "\n$scriptName");
+my $errorPrefix = ''; my $bannerColor = 'lime';
+if ($optError ne 1) {
+    $html_title .= ' Error';
+    $errorPrefix = 'Error - ';
+    $bannerColor = 'yellow'
+}
+if ( $opt_head eq 1 ) {print header, start_html(-title=>"\n$html_title",
+  -style => { -src => '/Public/Style.css' },
+  -meta=>{'Author'=>'www.ServerAdmin@lam-ak.com'},
+  -head=>Link({-rel=>'Shortcut Icon', -href=>'/Images/My/Camel.ico'}))};
+if ($headerText ne '') {$headerText = hr(). "\n". comment("\nHeader:\n")
+    . "\n" . center(h1("\n\n$errorPrefix$headerText\n\n"))}
+my $centeredText = '';
+if ($bodyText ne '') {$centeredText = hr(). "\n".
+ comment("\nBody text:\n"). "\n$bodyText\n\n"};
+my $plainText = '';
+if ($tailText ne '') {$plainText = "\n".
+ comment("\nTail text:\n"). "$tailText\n\n". hr()};
+print center(table(Tr(td({-bgcolor=>$bannerColor}, center("\n"
+    , font({-size=>4, -face=>'Arial'}, "\n"
+    , comment("\nSCRIPT_NAME: $ENV{SCRIPT_FILENAME}\n")
+    , "$pageHeader\n\n")))), Tr(td($headerText, $centeredText))))
+    , hr(), $plainText 
+    , "\n$ENV{REMOTE_ADDR} $ENV{REQUEST_METHOD} from server $ENV{SERVER_NAME}\n"
+    , emailAddress();
+if ($opt_head eq 1) { print end_html, "\n" };
+exit(0)} # Halt any further execution of program.
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub viewFormData {displayPage('View Form Data', namedParameters()
+ , environmentVariables())}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub namedParameters { my $opt_head = ''; my $parameterCount = @_;
+if ($parameterCount > 0) {$opt_head = shift}
+my @param_names = param(); # Get a list of all the named parameters
+my $htmlString = "\n<!--\n namedParameters \n-->\n";
+
+my @table_rows = (td(b('Name')) . td(b('Value')) . "\n");
+
+foreach my $p (@param_names) { # add each name and value pair
+     my $Value = param($p);
+     push(@table_rows,td({-valign=>'top'}, $p) . td($Value) . "\n");
+     };                      #  to the table rows
+
+$htmlString .= "<center>\n". h2('Parameters'). "\n" . table({-border=>1},
+    Tr(\@table_rows)). "</center><p>\n";        # and print the table.
+
+if ( $opt_head eq 1 ) {displayPage('', $htmlString)    # Print page with header
+} else {return $htmlString}}                             # or return htmlString
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub environmentVariables { # List environment variables in a table
+my @EnvVar = ('REMOTE_ADDR', 'REQUEST_METHOD', 'HTTPS', 'HTTP_USER_AGENT',
+           'HTTP_REFERER', 'SERVER_SIGNATURE', 'SERVER_NAME', 'REMOTE_USER');
+my $listType = ''; my $parameterCount = @_;
+if ($parameterCount > 0) {$listType = shift}
+my $htmlString= comment('Print some environment values'). "\n". "<table border>"
+    . Tr(td(b('Environmet Variable')). td(b('Value'))). "\n";
+if ($listType eq 'list') {@EnvVar = @_;}
+elsif($listType eq 'lam') { @EnvVar = keys(%ENV) }
+elsif ($listType eq 'user') {# List all user environment variables
+      @EnvVar = ('REMOTE_ADDR', 'REQUEST_METHOD', 'HTTP_USER_AGENT',
+           'HTTP_REFERER', 'SERVER_ADMIN', 'SERVER_NAME', 'SERVER_SIGNATURE',
+           'LOGON_USER', 'AUTH_USER', 'REMOTE_USER')}
+foreach my $EV (@EnvVar) {if ($ENV{$EV}) { # Each existing variable in list
+    $htmlString .= Tr(td("$EV:") . td("$ENV{$EV}")). "\n"}}
+$htmlString .= "</td></tr></table>\n";
+return $htmlString}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub timemark { my $parameterCount = @_;
+my $epoch_time = ''; # Optional time to convert to local time.
+my $timeFormat = 0; # Optional parameter to specify format
+if ($parameterCount > 0) {$epoch_time = shift}
+else {$epoch_time = time}; # Get the date and time
+if ($parameterCount > 1) {$timeFormat = shift}
+
+(my $Second, my $Minute, my $Hour, my $Day_Of_Month, my $Month, my $Year,
+  my $Day_Of_Week) = localtime($epoch_time);
+
+if ($timeFormat eq 0) {
+    # Define a list with months of the year as it's contents.
+    my @Month = ('January', 'February', 'March', 'April', 'May',
+              'June', 'July', 'August', 'September', 'October',
+              'November', 'December');
+
+    # Define a list with days of the week as it's contents.
+    my @Day = ('Sunday', 'Monday', 'Tuesday', 'Wednesday',
+             'Thursday', 'Friday', 'Saturday');
+   
+    my ($H12, $AM_PM); # Define values  for a 12 hour clock.
+    if($Hour < 1)     { $H12 = $Hour + 12; $AM_PM = 'AM'; }
+    elsif($Hour < 12) { $H12 = $Hour;      $AM_PM = 'AM'; }
+    elsif($Hour < 13) { $H12 = $Hour;      $AM_PM = 'PM'; }
+    else              { $H12 = $Hour - 12; $AM_PM = 'PM'; }
+
+    return "$Day[$Day_Of_Week], $Month[$Month] "
+     . $Day_Of_Month . ', ' . ($Year + 1900) . ' @ ' . $H12
+     . sprintf ":%.2d:%.2d $AM_PM", $Minute, $Second;
+} elsif ($timeFormat eq 1) { # YYYY-MM-DD HH:MN:SS
+    return sprintf "%.4d-%.2d-%.2d %.2d:%.2d:%.2d",
+     $Year + 1900, $Month + 1, $Day_Of_Month, $Hour, $Minute, $Second;
+} elsif ($timeFormat eq 2) { # YYYY-MM-DD HH:MN
+    return sprintf "%.4d-%.2d-%.2d %.2d:%.2d",
+     $Year + 1900, $Month + 1, $Day_Of_Month, $Hour, $Minute;
+} elsif ($timeFormat eq 3) { # YYYYMMDDHHMNSS
+    return sprintf "%.4d%.2d%.2d%.2d%.2d%.2d",
+     $Year + 1900, $Month + 1, $Day_Of_Month, $Hour, $Minute, $Second;
+} elsif ($timeFormat eq 4) { # YYYYMMDD
+    return sprintf "%.4d%.2d%.2d",
+     $Year + 1900, $Month + 1, $Day_Of_Month;
+} elsif ($timeFormat eq 5) { # YYMMDD
+     my $tmpString = sprintf "%.4d%.2d%.2d",
+     $Year + 1900, $Month + 1, $Day_Of_Month;
+    return substr($tmpString, 2);
+} elsif ($timeFormat eq 6) { # YYYY/MM/DD HH:MM:SS
+    return sprintf "%.4d/%.2d/%.2d %.2d:%.2d:%.2d",
+     $Year + 1900, $Month + 1, $Day_Of_Month, $Hour, $Minute, $Second;
+}}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub displaySource {
+if ("\L$ARGV[0]" eq 'source') {displayTextFile()} # Display source text
+if ("\L$ARGV[0]" eq 'rlog') {displayRCSlog()} # Display RCS log
+if ("\L$ARGV[0]" eq 'diff') {displayRCSdiff()} # Display RCS differences
+}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub displayTextFile { # Display a file as a text/plain content type web page.
+my $source; my $parameterCount = @_;
+if ($parameterCount > 0) {$source = shift}
+else {$source = $ENV{SCRIPT_FILENAME}}
+my $text =  getTextFile($source); print header('text/plain'), $text;
+exit(0)} # Halt any further execution of program.
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub getTextFile { # Get specified file contents as text.
+my $fileName = my $textFileString = ''; my $parameterCount = @_;
+if ($parameterCount > 0) {$fileName = shift}
+if(-e $fileName) { # test existance
+     open(SERVER_FILE, $fileName) or displayPage('-e',
+          "File cannot be opened for reading.", "$fileName \n". $!);
+     while(<SERVER_FILE>) {$textFileString .= $_ } close(SERVER_FILE);
+} else {displayPage('-e', "File not found!"
+          , "$fileName does not exist on this server.") }
+return $textFileString}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub displayRCSlog { my $source; my $parameterCount = @_;
+if ($parameterCount > 0) {$source = shift}
+else {$source = $ENV{SCRIPT_FILENAME}}
+my $text =  `rlog $source 2>&1`; print header('text/plain'), $text;
+exit(0)} # Halt any further execution of program.
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub displayRCSdiff { my $source; my $parameterCount = @_;
+if ($parameterCount > 0) {$source = shift}
+else {$source = $ENV{SCRIPT_FILENAME}}
+my $text =  `rcsdiff -b $source 2>&1`; print header('text/plain'), $text;
+exit(0)} # Halt any further execution of program.
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|

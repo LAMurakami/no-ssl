@@ -1,0 +1,37 @@
+#!/usr/bin/perl
+# $Id: Error-401.cgi-pl,v 1.11 2015/05/21 07:25:21 lam Exp $
+
+use LAM::LAM qw(displaySource displayPage);                # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                                 # Enable warnings.
+
+LAM::displaySource;                   # Display source, rlog, etc. if requested.
+
+my $errorType = "Access Denied!";     # Authorization Required! = Access Denied!
+my $error = "401 $errorType";                            # 401 http server error
+my $m1 = <<ENDm1;
+
+This server could not verify that you are authorized to access the document
+ requested.
+
+<br><br>
+
+The most likely reasons are:<ol type="1">
+<li>You did not supply credentials.
+<li>You supplied the wrong credentials (e.g., bad password).
+<li>Your browser does not understand how to supply the credentials required.
+<li>The valid credentials supplied are not authorized for this level of access.
+
+ENDm1
+; my $referer = '<br>';          # Format referer if present and longer than ...
+if ($ENV{HTTP_REFERER}) { my $hRef = $ENV{HTTP_REFERER}; my $dhRef = $hRef;
+     if (length($dhRef) > 50) {$dhRef = substr($dhRef,0,50).'...'}
+    $referer = h3('Referer: '. a({-href=>$hRef}, "\n" . $dhRef) . "\n")}
+my $uriD = $ENV{REQUEST_URI};        # Format URI for display if longer than ...
+if (length($uriD) > 50) {$uriD = substr($uriD,0,50).'...'}
+my $uri = p(). h3('Request: '. a({-href=>$ENV{REQUEST_URI}}, "\n". $uriD)."\n");
+
+LAM::displayPage('-c', '-t', 'LAM Alaska', 'LAM Alaska'
+,"\n<center><h2>$errorType</h2></center>\n"
+."\n$uri$referer$m1<br><br><center>$error</center>")

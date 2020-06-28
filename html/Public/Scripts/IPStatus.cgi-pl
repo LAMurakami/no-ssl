@@ -1,0 +1,130 @@
+#!/usr/bin/perl
+# $Id: IPStatus.cgi-pl,v 1.29 2014/07/27 05:23:52 lam Exp ubuntu $
+
+use LAM::LAM qw(displaySource displayPage viewFormData
+                                              timemark);   # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                                 # Enable warnings.
+
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+my $ProgramHead1 = "<center><h1>LAM Alaska Connection Status<br>\n"
+                 . '(<a href="/About/Program/IPStatus">IPStatus</a>)'
+                 . "\n</h1>\n\n";
+
+my $cfDir = '/etc/LAM'; my $configFile = "$cfDir/IPStatus.conf";
+open (CONFIG, $configFile)                             # Open configuration file
+ or LAM::displayPage('-e', "Cannot open configuration file!",  # or report error
+  "\nConfiguration file: <b>$configFile</b> NOT opened!\n",
+  "Run time error: $0<br>".
+  "Configuration file: $configFile NOT opened!<br><b>$!</b>\n" . $ProgramHead1);
+
+my %cF = loadConfigHash(); # Load Configuration Parameters hash!
+close(CONFIG);
+
+my $eV = "<p><table border>\n";
+
+my @eVlist = split (' ', $cF{'Environment Variables'});
+
+foreach my $EV (@eVlist) {if ($ENV{$EV})
+ { # Each existing variable in list
+    $eV .= Tr(td("$EV:") . td("$ENV{$EV}")). "\n"}}
+$eV .= "</td></tr></table>\n";
+
+my $oldIP        = $cF{'Last IP Address'};         # old IP Address
+
+use LWP::UserAgent;                 # Use a module of the libwww-perl collection
+
+my $routerStatus = LWP::UserAgent->new;                # Create a new User Agent
+my $req = HTTP::Request->new(GET =>  $cF{'Router Status URI'});    # and request
+   $req->authorization_basic($cF{'Router User'}, $cF{'Router Password'});
+my $response = $routerStatus->request($req)->as_string;      # Get Router Status
+
+my $title = ''; my $ipAddress = '';                  # Initialize some variables
+my $subnetMask = ''; my $defaultGateway = ''; my $dhcpServer = '';
+my $dnsServer = ''; my $leaseObtained = ''; my $leaseExpires = '';
+
+if ($response =~ /<title>(.+)<\/title>/is)  {$title = $1};       # Extract title
+
+if ($title eq '401 Unauthorized') {    # If we get the 401 Unauthorized response
+$response = $routerStatus->request($req)->as_string;     # Repeat Status request
+if ($response =~ /<title>(.+)<\/title>/is)  {$title = $1};    # Re-Extract title
+} # End - If we get the 401 Unauthorized response
+
+if ($title ne 'Untitled Document') {       # If we did not get the expected page
+    LAM::displayPage('-e', 'Unexpected Response',
+    "\nExpected 'Untitled Document' page.\n",
+	"Router Status URI: $cF{'Router Status URI'}<br>Request Response:<br>\n".
+    textarea({-name=>'Request Response', -wrap=>'soft', -rows=>18, -columns=>85,
+    -value=>$response, -READONLY=>1}) . $ProgramHead1)        # display response
+
+} else {          # Extract the rest of the parameters and display in a web page
+
+if ($response =~ /IP Address<\/B><\/td>\s*<TD NOWRAP width="50%">(.+?)<\/td>/s)
+ {$ipAddress = $1};
+
+if ($response =~ /Subnet Mask<\/B><\/td>\s*<TD NOWRAP>(.+?)<\/td>/s)
+ {$subnetMask = $1};
+
+if ($response =~ /Default Gateway<\/B><\/td>\s*<TD NOWRAP>(.+?)<\/td>/s)
+ {$defaultGateway = $1};
+
+if ($response =~ /DHCP Server<\/B><\/td>\s*<TD NOWRAP>(.+?)<\/td>/s)
+ {$dhcpServer = $1};
+
+if ($response =~ /DNS Server<\/B><\/td>\s*<TD NOWRAP>(.+?)<\/td>/s)
+ {$dnsServer = $1};
+
+if ($response =~ /Lease Obtained<\/B><\/td>\s*<TD NOWRAP>(.+?)<\/td>/s)
+ {$leaseObtained = $1};
+
+if ($response =~ /Lease Expires<\/B><\/td>\s*<TD NOWRAP>(.+?)<\/td>/s)
+ {$leaseExpires = $1};
+
+my $oldIPcolor = $cF{'No Change color'};      # Set background for Old IP
+
+if ($ipAddress ne $oldIP) {$oldIPcolor = $cF{'Change Detected color'}};
+
+my $timeMark = LAM::timemark(time, '1');
+my $timeMarkColor = $cF{'Change Detected color'};   # Highlight timemark
+
+if (($leaseObtained le $timeMark) and ($timeMark le $leaseExpires))
+ {$timeMarkColor = $cF{'No Change color'}};  # If within lease time range
+
+my $tr = '</td></tr><tr><td align=right>';
+
+my $table = "<table border><tr><td align=right>\n\n"
+ . "     IP Address:\t</td><td><a href=" . '"http://' . $ipAddress . '">'
+ .                                             "\n\n\t\t$ipAddress\t</a>$tr\n\n"
+ . "  Cable Modem MAC Address:</td><td>$cF{'Cable Modem MAC Address'}$tr\n"
+ . "Internet Port MAC Address:</td><td>$cF{'Internet Port MAC Address'}$tr\n\n"
+ . "    Subnet Mask:</td><td>$subnetMask$tr\n"
+ . "Default Gateway:</td><td>$defaultGateway$tr\n"
+ . "    DHCP Server:</td><td>$dhcpServer$tr\n"
+ . "     DNS Server:</td><td>$dnsServer$tr\n"
+ . " Lease Obtained:</td><td>$leaseObtained$tr\n"
+ . "Current Date Time:</td><td bgcolor=$timeMarkColor>$timeMark$tr\n"
+ . "  Lease Expires:</td><td>$leaseExpires$tr\n"
+ . " Old IP Address:</td><td bgcolor=$oldIPcolor>$oldIP\n"
+ . "</td></tr></table>\n</center>\n\n";
+
+LAM::displayPage('-c', '-t', " LAM Alaska $title", '', $ProgramHead1 . $table
+ . $eV); } # End - If we did not get the expected page / Extract the rest ...
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub loadConfigHash { my %configParameter = (); # Define a hash!
+
+# modified from Perl Cookbook 8.16 Reading Configuration files
+
+while(<CONFIG>) {          # Load parameters from configuration file into a hash
+    chomp;        # strip newline
+    s/#.*//;      # strip comments
+    s/^\s+//;     # strip leading white space
+    s/\s+$//;     # strip trailing white space
+    next unless length; # skip empty lines
+    last unless not m/z End of Basic Better Configuration paramters/;
+    my ($var, $value) = split(/\s*=\s/, $_, 2);
+    $configParameter{$var} = $value;
+}                    # End - Load parameters from configuration file into a hash
+return %configParameter
+}

@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+# $Id: Style.cgi-pl,v 1.3 2009/12/16 15:53:41 lam Exp lam $
+
+use LAM::LAM qw(displaySource displayPage
+                 namedParameters environmentVariables);    # Lexicon Abstact Map
+use LAM::GetDBvalue qw(programText);            # Get DB Value from LAM database
+use CGI qw(:all);                               # CGI - Load standard functions.
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                             # Enable all warnings.
+
+LAM::displaySource;                   # Display source, rlog, etc. if requested.
+
+if (param('Debug')) {LAM::displayPage('-t', 'LAM Alaska Style',
+ 'LAM Alaska Style', LAM::namedParameters() , LAM::environmentVariables('lam'))}
+
+my $moreText = "<table border><tr><td>";
+  $moreText .= "DOCUMENT_ROOT:</td><td>$ENV{DOCUMENT_ROOT}</td></tr><tr><td>\n";
+  $moreText .= "HTTP_REFERER:</td><td>$ENV{HTTP_REFERER}</td></tr><tr><td>\n";
+  $moreText .= "SCRIPT_URI:</td><td>$ENV{SCRIPT_URI}</td></tr><tr><td>\n";
+  $moreText .= "HTTP_HOST:</td><td>$ENV{HTTP_HOST}</td></tr></table>";
+
+LAM::displayPage('-t', 'LAM Alaska Style',   # Display program description
+ 'LAM Alaska Style', '', GetDBvalue::programText() . $moreText);

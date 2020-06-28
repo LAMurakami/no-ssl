@@ -1,0 +1,16 @@
+# $Id: robots.txt,v 1.5 2017/12/22 09:13:36 ubuntu Exp ubuntu $
+# exclude help system from robots
+User-agent: *
+Disallow: /manual/
+Disallow: /perldoc/
+Disallow: /php/
+Disallow: /manual-2.2/
+Disallow: /addon-modules/
+Disallow: /doc/
+Disallow: /images/
+Disallow: /man/
+Disallow: /info/
+Disallow: /whatis/
+# disallow stress test
+user-agent: stress-agent
+Disallow: /

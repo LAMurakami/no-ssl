@@ -1,0 +1,86 @@
+#!/usr/bin/perl
+# $Id: Last-Run.cgi-pl,v 1.7 2009/01/28 09:51:08 lam Exp lam $
+
+use LAM::LAM qw(displaySource displayPage viewFormData
+                                              timemark);   # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                                 # Enable warnings.
+
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+my $ProgramHead1 = "<center><h1>LAM Alaska \n"           # Define program header
+                 . '(<a href="/About/Program/Last-Run">Last-Run</a>)'
+                 . "\n example<br></h1>\n\n";          # with documentation link
+
+my $cfDir = '/etc/LAM'; my $configFile = "$cfDir/Last-Run.conf";
+open (CONFIG, $configFile)                             # Open configuration file
+ or LAM::displayPage('-e', "Cannot open configuration file!",  # or report error
+  "\nConfiguration file: <b>$configFile</b> NOT opened!\n",
+  "Run time error: $0<br>".
+  "Configuration file: $configFile NOT opened!<br><b>$!</b>\n" . $ProgramHead1);
+
+my $cFtext = '' ; my @cFlines  = () ; my %cF = (); # Define config parameters
+
+while(<CONFIG>) {          # Load parameters from configuration file into a hash
+    push(@cFlines, $_); # Store original configuration file text
+    chomp;        # strip newline
+    s/#.*//;      # strip comments
+    s/^\s+//;     # strip leading white space
+    s/\s+$//;     # strip trailing white space
+    next unless length; # skip empty lines
+    my ($var, $value) = split(/\s*=\s/, $_, 2);
+    $cF{$var} = $value;
+} close(CONFIG);     # End - Load parameters from configuration file into a hash
+
+my $title = $cF{'Last Run title'};
+if ($title ne 'Last Run test 1') { # If unexpected parameter value
+    foreach (@cFlines) {$cFtext .= $_}; # Put lines into a single string
+    LAM::displayPage('-t', 'Last Run', '', '',
+    textarea({-name=>'Configuration File', -wrap=>'soft', -rows=>18,
+     -columns=>85, -value=>$cFtext, -READONLY=>1})) # Display Configuration File
+} else { # Else - If unexpected parameter value / Update parameters
+
+my $timeEnow = time;
+my $timeMark = LAM::timemark($timeEnow, '1');
+
+foreach (@cFlines) { # Update parameters with new values
+ my $comments = ''; if (/(#.*)/) {$comments = $1};      # capture comments
+ s/^(\s*Last Run epoch time\s*=)\s*.*$/$1 $timeEnow $comments/;  # Date Time
+ s/(\s*Last Run Date Time\s*=)\s*.*/$1 $timeMark $comments/;  # Insert last run
+} # End - Update parameters with new values
+
+foreach (@cFlines) {$cFtext .= $_}; # Put lines into a single string for display
+
+open (CONFIG, ">$configFile")               # Open configuration file for update
+ or LAM::displayPage('-e', "Update not performed!",            # or report error
+   "\n<center><h2>Configuration file: $configFile".
+   "<br>NOT opened for update!</h2></center>\n",
+   "Run time error: $0<br>".
+   "Configuration file: $configFile NOT opened for update!<br><b>$!</b>\n" .
+    "<center><b>Configuration File: $configFile</b></center>\n" .
+    textarea({-name=>'Configuration File', -wrap=>'soft', -rows=>16,
+     -columns=>85, -value=>$cFtext, -READONLY=>1}) . $ProgramHead1);
+foreach (@cFlines) {print CONFIG $_} close(CONFIG);  # Update configuration file
+
+my $timeMarkColor = $cF{'Change Detected color'};           # Highlight timemark
+
+my $tr = '</td></tr><tr><td align=right>';
+
+my $table = "<table border><tr><td align=right>\n\n"
+ . " Last Run Date Time:\t</td><td>$cF{'Last Run Date Time'}$tr\n"
+ . "Last Run epoch time:</td><td>$cF{'Last Run epoch time'}$tr\n"
+ . "  Current Date Time:</td><td bgcolor="
+ . "$cF{'Change Detected color'}>$timeMark$tr\n"
+ . " Current epoch time:</td><td>$timeEnow$tr\n"
+ . "    No Change color:</td><td bgcolor="
+ . "$cF{'No Change color'}>$cF{'No Change color'}$tr\n"
+ . "Change Detected color:</td><td bgcolor="
+ . "$cF{'Change Detected color'}>$cF{'Change Detected color'}"
+ . "</td></tr></table>\n</center>\n\n";
+
+LAM::displayPage('-c', '-t', " LAM Alaska $title", '', $ProgramHead1 . $table .
+    "<center><h2>Configuration File: $configFile</h2></center>\n" .
+    textarea({-name=>'Configuration File', -wrap=>'soft', -rows=>16,
+     -columns=>85, -value=>$cFtext, -READONLY=>1}));
+} # End - If unexpected parameter value / Update parameters

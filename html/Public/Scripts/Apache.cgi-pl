@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+# $Id: Apache.cgi-pl,v 1.1 2008/04/09 02:34:51 lam Exp lam $
+
+use LAM::LAM qw(displaySource htmlHead menuBar
+                                            emailAddress); # Lexicon Abstact Map
+use LAM::Multicount qw(webPageCounter);
+use CGI qw(:all);                               # CGI - Load standard functions.
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                             # Enable all warnings.
+
+LAM::displaySource;                   # Display source, rlog, etc. if requested.
+
+my $programDescription = <<ENDprogramDescription
+
+<br><p>I created the Apache.cgi-pl as a wrapper for the
+ <a href="/manual">manual</a> html pages on my site.
+The program is written in Perl.
+This program wrapper adds the menuBar and style to the mysql html pages.
+I first edited index.html and mysql-html.css then decided it would be easy
+enough to write this script.  I am using a RewiteRule so that the .html files
+are wrapped and other file types are still available with the same URL.
+<br><br><p>
+This text is displayed when the program is accessed without a RewriteRule.
+The RewiteRule puts the html file name in the RewriteHtml environment varible
+ and this program displays existing pages wrapped with my site header using
+ the default style for my site.
+<br><br>
+ENDprogramDescription
+;
+my $htmlHead1 = <<ENDhtmlHead1
+<head>
+<script type="text/javascript" src="/Public/Scripts/Java/Navigation.js"></script>
+ENDhtmlHead1
+;
+REWRITE:{
+if ($ENV{RewriteHtml}) {my $rewriteHtml = $ENV{RewriteHtml};
+
+     if ($rewriteHtml =~ /^\/menuBar.html/) {last REWRITE};
+
+     my $fileName = "/usr/share/doc/apache-doc-2.2.11/$rewriteHtml";
+     my $text = LAM::getTextFile($fileName);
+
+     my $title = 'LAM Alaska Apache manual';
+     if ($text =~ /<title>(.+)<\/title>/s)  {$title = $1}
+
+
+     print LAM::htmlHead('-i', 'LAM', $title), "\n", LAM::menuBar, "\n", $text
+    , hr() ,Multicount::webPageCounter('-u'), br() 
+    , "\n$ENV{REMOTE_ADDR} $ENV{REQUEST_METHOD} from server \n"
+    , a({-href=>"/",-name=>"tail"} , $ENV{SERVER_NAME}) , LAM::emailAddress();
+     exit(0) # Halt any further execution of program.
+
+}} LAM::displayPage('-t', 'LAM Alaska Apache',   # Display program description
+ 'LAM Alaska Apache', '', $programDescription);        # when no query string

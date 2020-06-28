@@ -1,0 +1,134 @@
+#!/usr/bin/perl
+# $Id: TimeMark.cgi-pl,v 1.18 2017/02/02 06:16:32 lam Exp lam $
+#
+use LAM::LAM qw(timemark environmentVariables namedParameters
+              htmlHead menuBar displayPage displaySource);
+use LAM::Multicount qw(webPageCounter);
+use CGI qw(:all); # Load standard CGI functions.
+use strict;      # Force me to use strict variable syntax.
+use warnings;   # Enable all warnings.
+
+LAM::displaySource(); # Display source, rlog, etc. if requested.
+
+my $refererPage = '';
+if ($ENV{HTTP_REFERER}) {$refererPage = $ENV{HTTP_REFERER}}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+# main
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+my $Special_Case; print header,; # Print standard html header
+my $date_and_time = LAM::timemark();
+my $html_title = "\n" . $date_and_time . " - $ENV{SERVER_NAME}";
+print LAM::htmlHead('-h', $html_title), LAM::menuBar(),"\n"; # Use standard head
+
+special_case(); # Check for special handling.
+
+Alaska_time_heading(); # Display the time and a link to official Alaska time.
+
+if ($#ARGV ge 0) { # If there are command line arguments or parameters
+command_line_parameters(); } # Display any command line parameters
+
+my @param_names = param(); # Get a list of all the named parameters
+if ($#param_names ge 0) {print LAM::namedParameters(); # Print them in a table
+    if($Special_Case eq 'No') {$Special_Case = 'named_parameters';}}
+
+if (($Special_Case eq 'lam') or ($Special_Case eq 'user'))
+ {print LAM::environmentVariables($Special_Case)}
+else {print LAM::environmentVariables()}
+
+perl_version(); # Report the Perl version that generated the page.
+
+if($Special_Case ne 'No') {
+     my $html_block = 'Use <a href="?source">'
+     . "this link</a> to display the source for this Perl CGI script.\n";
+     print p($html_block)}
+
+print "Thanks for visiting <a name=tail>this page</a>.\n";
+print end_html;
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+# subprograms
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub Alaska_time_heading {print "<!-- Alaska_time_heading -->\n";
+use File::Basename;
+my $path = dirname($ENV{SCRIPT_FILENAME});
+my $scriptPublic = '/Public/Scripts';
+if ($path =~ /($scriptPublic)(.*)/) {$path = $2} # Strip Public/Scripts from path
+my $scriptPrivate = '/Private/Scripts';
+if ($path =~ /($scriptPrivate)(.*)/) {$path = $2} # Strip Private/Scripts from path
+my $publicScripts = '/Public/Scripts';
+if ($path =~ /($publicScripts)(.*)/) {$path = $2} # Strip public from path
+if ($path =~ /(.*)\/$/) {$path = $1} # Strip trailing slash if present
+my $scriptName = basename($ENV{SCRIPT_FILENAME});
+my $html_title = $scriptName;
+my $pageHeader = "\n" .	"$path/" . # Include link to whatis time
+    a({-href=>"/whatis/time&Search+type=both"} , 'time');
+
+print '<a href="/"><font size=+2>', $date_and_time ,'</font></a>',
+ "\n" , ' &nbsp; <a href="http://www.time.gov">',
+ "\n" ,  '(Alaska Time)</a>', "\n<p>SCRIPT_NAME: ", '&nbsp; ', $pageHeader,
+ '&nbsp; ', "SERVER_NAME: ", $ENV{SERVER_NAME},
+ "\n<br>" , '<a href="/time">/time</a> is ',
+'<a href="/Public/Scripts/TimeMark.cgi-pl">TimeMark.cgi-pl</a>',
+ "\n<!--" ,
+ "\n at ak7:/var/www/html/Public/Scripts/TimeMark.cgi-pl" ,
+ "\n-->" , ' &nbsp; ', "Uptime: ", qx(uptime),
+ "\n<br>" , Multicount::webPageCounter('-f', '-s'), "\n<br>" ;
+}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub special_case {$Special_Case = 'No'; specialCase: {
+my $oP = ''; if ("\L$ARGV[0]") {$oP = "\L$ARGV[0]";
+	if ($oP eq 'lam')   {$Special_Case = 'lam'; last specialCase}
+	if ($oP eq 'user')  {$Special_Case = 'user'; last specialCase}}
+my $pI = ''; if ($ENV{PATH_INFO}) {$pI = "\L$ENV{PATH_INFO}";
+    if ($pI eq '/lam')  {$Special_Case = 'lam'; last specialCase}
+	if ($oP eq '/user') {$Special_Case = 'user'; last specialCase}}
+if (param('lam')) {$Special_Case = param('lam');
+	if ($Special_Case eq 'Error') {LAM::displayPage('-e', '-m', '-h', 'Requested!',
+          LAM::namedParameters() . LAM::environmentVariables())}}}
+print '<!-- $Special_Case = '."$Special_Case -->\n"}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub command_line_parameters {
+print "<!-- command_line_parameters -->\n";
+my $n = $#ARGV+1; # number of parameters
+
+if ($n > 0) {# if parameters
+    print "\n<br><br><p>", $n, " ordered parameter";
+    if ($n > 1) {print 's'} print ':';
+    for (my $i = 0; $i < $n; $i++) { print " $ARGV[$i]"; } # print parameters
+    print "\n\n";
+    }
+}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub perl_version {
+print "<!-- perl_version -->\n";
+print "<p>\n";
+print p(' This page is displayed by a perl CGI program using the perl
+          CGI module.  The program was designed to display the date and
+          time, a number of environment variables (mostly from my server),
+          and the parameters passed by the browser from a html page with
+          a form that submits to this page.  This makes it a useful test
+          action when developing html form pages to verify the name and
+          value pairs passed instead of performing whatever action the
+          form is being developed for.'), "\n",
+      p(' The program can handle either a
+
+<a href="http://z.lam1.us/Public/Content/Form-Get.html">GET</a> or
+<a href="http://z.lam1.us/Public/Content/Form-Post.html">POST</a>
+
+          method.  The GET
+          method seems a little faster on my server and the amount of data
+          allowed does not seem severly limited on my server.  Some
+          servers may limit a GET request to as little as 256 or 512
+          characters.  I have not run up against the limit on my server
+          yet.');
+if ($refererPage eq '') {print "Some access using this CGI interface\n"
+    ." is only allowed if the request is referred from\n"
+    . ' <a href="/">' . "a page on this site</a>.<p>\n";}
+
+print "\n",  '<!-- $Special_Case = ', "'",  $Special_Case, "' -->\n\n";
+if($Special_Case eq 'No') {
+     my $html_block = "This paragraph was printed because the $ENV{SCRIPT_NAME}"
+     . " script did not\n recognize any special cases that would allow"
+     . " more access through\n this CGI interface.";
+     print p($html_block)}
+}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|

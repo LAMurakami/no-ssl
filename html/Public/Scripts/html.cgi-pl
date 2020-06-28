@@ -1,0 +1,12 @@
+#!/usr/bin/perl
+# $Id: menuBar.cgi-pl,v 1.3 2007/10/16 07:52:59 lam Exp lam $
+
+use LAM::LAM qw(displaySource htmlHead menuBar);           # Lexicon Abstact Map
+use CGI qw(:all);                               # CGI - Load standard functions.
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                             # Enable all warnings.
+
+LAM::displaySource;                   # Display source, rlog, etc. if requested.
+
+print LAM::htmlHead, "\n", center(LAM::menuBar), "\n",
+ h1("$ENV{DOCUMENT_ROOT}$ENV{SCRIPT_URL}"), "\n";

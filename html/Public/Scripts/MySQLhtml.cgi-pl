@@ -1,0 +1,71 @@
+#!/usr/bin/perl
+# $Id: MySQLhtml.cgi-pl,v 1.10 2008/02/02 12:29:31 lam Exp lam $
+
+use LAM::LAM qw(displaySource displayPage menuBar);        # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                                 # Enable warnings.
+
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+my $programDescription = <<ENDprogramDescription
+
+<br><p>I created the MySQLhtml.cgi-pl as a wrapper for the
+ <a href="/mysql">mysql</a> html pages on my site.
+The program is written in Perl.
+This program wrapper adds the menuBar and style to the mysql html pages.
+I first edited index.html and mysql-html.css then decided it would be easy
+enough to write this script.  I am using a RewiteRule so that the .html files
+are wrapped and the images in the mysql/images/ are still available with
+ the same URL.
+All the html files are in a single
+ directory and the images in a subdirectory.
+<br><br><p>
+This text is displayed when the program is accessed without a query string.
+The RewiteRule puts the html file name in the query string and this program
+displays existing pages wrapped with my site header using the default style for
+my site.  This program transfers processing to the file not found program on
+my site for any URL not a valid documet in the <a href="/mysql">mysql</a>
+directory.
+<br><br>
+ENDprogramDescription
+;
+my $htmlHead1 = <<ENDhtmlHead1
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script type="text/javascript" src="/Public/Scripts/Java/Navigation.js"></script>
+ENDhtmlHead1
+;
+my $htmlHead2 = ' onload="initializeMenuBarforIE();"';
+my $queryString = '';
+if ($ENV{QUERY_STRING}) {$queryString = $ENV{QUERY_STRING};
+my $fileName = '';
+    if ($queryString =~ /^([\w\-\.]*)\.html/) {my $pageName = $1;      # If html
+        $fileName = "/usr/share/doc/MySQL-common-5.0.45/html/$pageName.html";
+        if(-e $fileName) {                                      # test existance
+            my $text = LAM::getTextFile($fileName);
+            $text =~ s/^<html><head>/$htmlHead1/;        # replace header part 1
+            my $menuBar = LAM::menuBar;
+
+$text =~ s/<\/head><body(.*?)>/<\/head><body$1$htmlHead2>$menuBar/;     # part 2
+
+$text =~ s/<title>(.*?)<\/title>/\n<title>LAM Alaska MySQL - $1<\/title>\n/; # 3
+
+my $footer = "\n<table width=100%><tr><td>\n$ENV{REMOTE_ADDR} "
+ . a({-href=>"/MySQLhtml"} , $ENV{REQUEST_METHOD}) .  " from server \n"
+ . a({-href=>"/"} , $ENV{SERVER_NAME}) . "\n</td><td align=center>"
+ . a({-href=>"#top", -name=>"tail"} , ' &nbsp; Top &nbsp; ')
+ . "\n</td><td align=right>" . LAM::timemark() . "\n</td></tr></table>";
+
+$text =~ s/<\/body><\/html>/\n$footer\n<\/body><\/html>/;           # add footer
+
+            print header(-charset=>'UTF-8'), $text;
+            exit(0) # Halt any further execution of program.
+        }
+    } LAM::displayPage('-t', 'LAM Alaska MySQLhtml', 'LAM Alaska MySQLhtml'
+        , '$queryString: '."$queryString")                                # Huh?
+} LAM::displayPage('-t', 'LAM Alaska MySQLhtml',   # Display program description
+ 'LAM Alaska MySQLhtml', '', $programDescription);        # when no query string

@@ -1,0 +1,59 @@
+#!/usr/bin/perl
+# $Id: Better-Config-File.cgi-pl,v 1.7 2009/01/23 12:13:12 lam Exp lam $
+
+use LAM::LAM qw(displaySource displayPage getTextFile);    # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                                 # Enable warnings.
+
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+my $ProgramHead1 = "<center><h1><a href=" . '"/About/Program/Better-Config-File">'
+       . "Better Configuration File</a> parameters</h1>\n\n";
+
+my $cfDir = '/etc/LAM'; my $cfFile = "$cfDir/Better-Configuration-File.conf";
+open (CONFIG, $cfFile)                                 # Open configuration file
+ or LAM::displayPage('-e', "Cannot open configuration file",   # or report error
+  "\nConfiguration file: <b>$cfFile</b> NOT opened!\n",
+  "Run time error: $0<br>Configuration file: $cfFile NOT opened!<br><b>$!</b>\n"
+  . "$ProgramHead1\n");
+
+# modified from Perl Cookbook 8.16 Reading Configuration files
+
+my %configParameter = (); # Define a hash!
+
+while(<CONFIG>) {          # Load parameters from configuration file into a hash
+    chomp;        # strip newline
+    s/#.*//;      # strip comments
+    s/^\s+//;     # strip leading white space
+    s/\s+$//;     # strip trailing white space
+    next unless length; # skip empty lines
+    last unless not m/z End of Basic Better Configuration paramters/;
+    my ($var, $value) = split(/\s*=\s/, $_, 2);
+    $configParameter{$var} = $value;
+}                    # End - Load parameters from configuration file into a hash
+
+my $h2 = "<h2>File: $cfFile</h2>\n</center>\n\n";         # Define some headings
+
+my $table = "<table border>\n";                       # Start a table definition
+
+my $tr1 = '<tr><td align=right>';                      # Define table boundaries
+my $tr2 = '</td></tr>';
+
+# modified from Perl Cookbook 5.5 printing a Hash and 5.4 Traversing a Hash
+# with 5.9 Sorting a Hash included as an afterthought.
+
+foreach my $key (sort keys %configParameter) { # for each parameter by name
+    my $value = $configParameter{$key};        # retrieve value for name
+    my $bGcolor = 'white';                     # Set default background color
+    if ($value eq '') {$bGcolor = 'yellow'}    # Highlight keys with no value
+    $table .= "$tr1$key:</td><td bgcolor=$bGcolor>$value$tr2\n" # add table row
+}
+$table .= "</table>\n\n";                             # End the table definition
+
+my $text =  LAM::getTextFile($cfFile);     # Get the RAW configuration file text
+
+LAM::displayPage('-c', '-t', " LAM Alaska Better Configuration File parameters",
+ '', $ProgramHead1 . $table . $h2    # Display both formatted parameters and RAW file data
+. textarea({-name=>'Configuration File', -wrap=>'soft', -rows=>32, -columns=>85,
+    -value=>$text, -READONLY=>1}));                 # with LAM style and menuBar

@@ -1,0 +1,17 @@
+#!/bin/sed -f
+# $Id: man-sed.txt,v 1.3 2012/07/23 02:32:17 lam Exp lam $
+# file of sed commands to preprocess man pages before passing them
+# to the man2html program which can't handle some macros.
+#
+s|\\FC||g
+s|\\F\[\]||g
+# Change left and right double quotes to generic double quotes.
+s|\\(lq|"|g
+s|\\(rq|"|g
+s|\\(dq|"|g
+# Change quotes to generic quotes.
+s|\\(aq|'|g
+# Change .opt used by the ps man page to .TP (paragraph with hanging tag)
+#  and the .B bold
+s|^.opt|.TP\
+.B|g

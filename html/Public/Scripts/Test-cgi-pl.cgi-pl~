@@ -1,0 +1,21 @@
+#!/usr/bin/perl
+#print "HTTP/1.0 200 OK\n";
+print "Content-type: text/html\n\n";
+
+$fileName = '/usr/share/doc/mysql-doc-5.1.55/index.html'
+
+if ($parameterCount > 0) {$fileName = shift}
+if(-e $fileName) { # test existance
+     open(SERVER_FILE, $fileName) or displayPage('-e',
+          "File cannot be opened for reading.", "$fileName \n". $!);
+     while(<SERVER_FILE>) {$textFileString .= decode('UTF-8', $_) }
+          close(SERVER_FILE);
+
+
+
+print "<html><head>\n";
+print "<title>Hello</title>\n";
+print "</head>\n";
+print "<h1>Hello</h1>\n";
+print "<p />Hello\n";
+print "</html>\n";

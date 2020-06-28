@@ -1,0 +1,15 @@
+#!/usr/bin/perl
+# $Id: Index.cgi-pl,v 1.16 2017/12/09 08:05:29 ubuntu Exp ubuntu $
+
+use LAM::LAM qw(displaySource displayPage);                # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                                      # Force strict variable syntax.
+use warnings;                                             # Enable all warnings.
+
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+LAM::displayPage('-c', '-i', 'LAM', '-t', 'LAM AWS', '',
+    center(h1('LAM AWS'). "\n".
+    h2('Linux Apache MariaDB in the cloud.'). "\n".
+    h3('aka'). "\n".
+    h2('A cheap reliable web and shell server.')))

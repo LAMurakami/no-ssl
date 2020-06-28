@@ -1,0 +1,82 @@
+<html><head>
+<!-- $Id$ -->
+
+<title>Linux Apache MariaDB in the cloud</title>
+
+<link rel="Shortcut Icon" href="/Images/My/LAM.ico" />
+<link rel="stylesheet" type="text/css" href="/Public/Style.css" />
+
+</head><body>
+
+<h1 >&nbsp;
+
+Linux Apache MariaDB in the cloud
+
+</h1>
+<br class="clearit">
+					<!-- start content -->
+<div id="mw-content-text" lang="en" dir="ltr">
+
+<h2><span id="LAM_AWS">LAM AWS</span></h2>
+<p>The LAM AWS server instance was designed to utilize a t2.micro EC2 instance which is part of the AWS Free Tier offering.  That offering includes 750 Hours / month of a t2.micro EC2 instance which is enough to run one instance 24/7.  The instance could scale up by using a larger and more capable server and other options.  Currently multiple groups of virtual hosts all run on one server but multiple servers could be used to scale wide.  Once the Free Tier is over this small server will cost about $15.00 / month with the current sizing and usage.
+</p><p>The LAM AWS server is initialized with Ubuntu CloudInit directives to install the necessary packages, configuration and content on top of a generic Ubuntu Server image.  All the directives in a file can be specified with the CLI user-data parameter or in Advanced Options of the launch page from the AWS console.
+</p>
+<h3><span id="Launch_an_AWS_EC2_instance_to_take_over_lam1_from_the_laptop_using_AWS_CLI">Launch an AWS EC2 instance to take over lam1 from the laptop using AWS CLI</span></h3>
+<p>After installation of the awscli package and configuration a new instance can be launched from the command line on ak16 with the following:
+</p>
+<pre>aws ec2 run-instances --count 1 --image-id ami-4e79ed36 \
+--instance-type t2.micro --security-group-ids sg-3bda0647 \
+--associate-public-ip-address --key-name aws-nwo-lam1 --user-data \
+file:///mnt/Bk0/Zz/z18/z1804/2018-04-10/<a href="aws-nwo-lam1-Ubuntu-CloudInit-17.txt">aws-nwo-lam1-Ubuntu-CloudInit-17.txt</a>
+</pre>
+<h3><span id="Launch_an_AWS_EC2_instance_to_be_a_SSH_SOCKS5_Proxy_server_on_port_433">Launch an AWS EC2 instance to be a SSH SOCKS5 Proxy server on port 433</span></h3>
+<pre>aws ec2 run-instances --count 1 --image-id ami-4e79ed36 \
+--instance-type t2.micro --security-group-ids sg-3bda0647 \
+--associate-public-ip-address --key-name aws-nwo-lam1 --user-data \
+file:///mnt/ak16-ext4/Zz/z18/z1803/2018-03-20/<a href="aws-nwo-lam1-Ubuntu-CloudInit-15.txt">aws-nwo-lam1-Ubuntu-CloudInit-15.txt</a>
+</pre>
+<h2><span id="Log">Log</span></h2>
+<ul><li> Tuesday, March 20, 2018 (Alaska Time) - I created a set of Ubuntu CloudInit directives to start a proxy server that I could use when connected to the Internet via the WiFi at the Playa Grande Resort in Cabo San Lucas, Baha California, Sur, Mexico.
+<ul><li> This WiFi was blocking port 22 and other ports including some of my email servers. For this instance I configured ssh to use port 443 because both ports 80 and 443 were open for http and https traffic. I left Apache configuration less the HTTPS configuration.</li>
+<li> Ubuntu Server 16.04 LTS (HVM), SSD Volume Type - ami-4e79ed36</li></ul></li>
+<li> Sunday, December 3, 2017 (Alaska Time) I signed up for Amazon Web Services (AWS)</li></ul>
+
+<!-- 
+NewPP limit report
+Cached time: 20180411064258
+Cache expiry: 86400
+Dynamic content: false
+CPU time usage: 0.008 seconds
+Real time usage: 0.008 seconds
+Preprocessor visited node count: 15/1000000
+Preprocessor generated node count: 20/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/40
+Expensive parser function count: 0/100
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+</div>
+<!-- Saved in parser cache with key wikidb:pcache:idhash:315-0!canonical and timestamp 20180411064258 and revision id 3978
+ -->
+</div>
+					<div id="catlinks" data-mw="interface"></div>
+<!-- end content -->
+<div><div id="toc"><div><h2>Contents</h2></div>
+<div>
+Retrieved from "<a dir="ltr" href="https://ak17.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=3978">https://ak17.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=3978</a>"</div>
+<ul>
+<li><a href="#LAM_AWS">1 LAM AWS</a>
+<ul>
+<li><a href="#Launch_an_AWS_EC2_instance_to_take_over_lam1_from_the_laptop_using_AWS_CLI">1.1 Launch an AWS EC2 instance to take over lam1 from the laptop using AWS CLI</a></li>
+<li><a href="#Launch_an_AWS_EC2_instance_to_be_a_SSH_SOCKS5_Proxy_server_on_port_433">1.2 Launch an AWS EC2 instance to be a SSH SOCKS5 Proxy server on port 433</a></li>
+</ul>
+</li>
+<li><a href="#Log">2 Log</a></li>
+</ul>
+</div>
+</body></html>
+

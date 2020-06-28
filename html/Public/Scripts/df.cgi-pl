@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+# $Id: df.cgi-pl,v 1.8 2017/02/14 06:15:23 lam Exp lam $
+
+
+use LAM::LAM qw(displaySource displayPage);                # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                             # Enable all warnings.
+
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+my $hostName = qx(uname -n | cut --delimiter=. --fields=1);   # Report Host Name
+
+my $dfCommand = '/bin/df -Th -x supermount';
+if ((param('tmpfs') == 0))  # Use tmpfs=1 to include temp file systems in report
+ {$dfCommand .= ' --exclude-type=tmpfs --exclude-type=devtmpfs'}
+my $result = qx($dfCommand);  # Get results: file system disk space usage report
+
+my @lines = split /^/, $result;             # Split result into individual lines
+my $line_number = 0;                          # Set line number and table header
+my $table_text = "<table border>\n<tr><td>Filesystem</td><td>Type</td><td>Size"
+  . "</td>\n<td>Used</td><td>Available</td><td>Use%</td><td>Mounted on</td>"
+  . "</tr>\n";
+my $next_column_1 = '';
+foreach my $line (@lines) { $line_number ++;             # Increment line number
+     my @columns = split /\s+/, $line;                 # Split line into columns
+     my $column_count = @columns;
+CASE: {
+ if ($line_number == 1) { last CASE; }                 # Ignore Header line data
+ if ($column_count == 1) {                 # Save Incomplete line data for later
+   $next_column_1 = $columns[0];
+   last CASE;                               # continue processing with next line
+ }
+ if ($next_column_1 ne '') {                                   # Load saved data
+   $columns[0] = $next_column_1; $next_column_1 = ''; }
+ $table_text .= '<tr>';                                  # format as a table row
+ my $column_number = 0;
+ foreach my $column (@columns) { $column_number  ++;
+   if ($column_number == 3 or $column_number == 4 or $column_number == 5
+   or $column_number == 6) { $table_text .= "<td align=right>$column</td>"; }
+   else { $table_text .= "<td>$column</td>"; }
+ }
+ $table_text .= "</tr>\n";                                   # end of table rows
+}
+}
+$table_text .= "</table>\n";                                      # end of table
+
+LAM::displayPage('-c', '-i', 'LAM', '-t', "$hostName disk usage", '',
+    center(h1('LAM AWS'). "\n".
+    h2("$hostName file system disk space usage report"). "\n". $table_text ))
