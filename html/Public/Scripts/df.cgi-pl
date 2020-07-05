@@ -46,5 +46,5 @@ CASE: {
 $table_text .= "</table>\n";                                      # end of table
 
 LAM::displayPage('-c', '-i', 'LAM', '-t', "$hostName disk usage", '',
-    center(h1('LAM AWS'). "\n".
+    center(h1('LAM Alaska'). "\n".
     h2("$hostName file system disk space usage report"). "\n". $table_text ))
