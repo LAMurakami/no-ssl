@@ -64,3 +64,7 @@ local-ipv4 values from the /var/log/cloud-init-output.log to the
 /var/www/aws/html/index.html and /var/www/aws/aws_apache2.conf files so the
 Dynamic Domain Name Service page is displayed when the AWS public domain
 name or IP address is visited.
+
+* site_perl-LAM contains some perl modules to be linked into site_perl.
+The modules simplify a number of cgi perl routines used in both Public
+and Private scripts of the sites.
