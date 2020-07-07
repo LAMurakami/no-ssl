@@ -20,9 +20,14 @@ check_dir "no-ssl" "/var/www" "Base directory is not where expected."
 echo
 echo "Configuring perl to include LAM perl modules"
 
+check_dir "lib" "/usr/local" \
+"Local lib directory is not where expected."
+
 site_perl_dir='/usr/local/lib/site_perl';
-check_dir "site_perl" "/usr/local/lib" \
-"Local site_perl directory is not where expected."
+
+if [ ! -d ${site_perl_dir} ]; then
+    mkdir ${site_perl_dir}
+fi
 
 rm -rf ${site_perl_dir}/LAM
 ln -s ${source_dir}/site_perl-LAM ${site_perl_dir}/LAM
