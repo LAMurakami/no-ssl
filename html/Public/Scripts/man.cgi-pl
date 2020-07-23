@@ -7,10 +7,6 @@ use strict;                            # Force me to use strict variable syntax.
 use warnings;                                                 # Enable warnings.
 LAM::displaySource();                 # Display source, rlog, etc. if requested.
 
-if (not defined $ENV{'REMOTE_USER'}) {     # If not an authenticated remote user
-   $ENV{'MANPATH'} = '/usr/local/share/man:/usr/share/man';        # Set MANPATH
-}                                                 # to omit /usr/local/man pages.
-
 my $scriptName = $ENV{SCRIPT_FILENAME};               # Use script name in title
     if ($scriptName =~ /.*\/(.*)\.cgi-pl/) {$scriptName = $1}          # trimmed
 my $n = $#ARGV+1;   # man2html creates links with unnamed arguments so check for
