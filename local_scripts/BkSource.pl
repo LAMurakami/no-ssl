@@ -42,8 +42,6 @@ print "=========================================\n",         # Backup job starte
 print "Program: $0\nConfiguration file: $configFile\nConfiguration data:\n\n";
 system("cat $configFile");                       # Report configuration file data
 print "\n";
-system("mv $cfDir/$programName.last $cfDir/$programName.previous");         # Log
-system("echo $bkDir/$newDir/$outPrefix >$cfDir/$programName.last");   # Reference
 
 print "Backing up source files ...\n\n";                          # Backup source
 system("$find | $sed | xargs -0 tar -cvpzf $tmpDir/$outPrefix.src.tar.gz");

@@ -38,8 +38,6 @@ print "=========================================\n",         # Backup job starte
 print "Program: $0\nConfiguration file: $configFile\nConfiguration data:\n\n";
 system("cat $configFile");                       # Report configuration file data
 print "\n";
-system("mv $cfDir/$programName.last $cfDir/$programName.previous");         # Log
-system("echo $bkDir/$newDir/$outPrefix >$cfDir/$programName.last");   # Reference
 
 chdir '/var/tmp';
 
