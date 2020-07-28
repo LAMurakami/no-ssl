@@ -1,0 +1,214 @@
+#!/usr/bin/perl
+# $Id: timeTest,v 1.11 2013/02/18 21:24:18 lam Exp lam $
+#
+## perldoc timeTest
+=pod
+
+=head1 NAME
+
+B<timeTest> - Run and time commands in a test script.
+
+=head1 SYNOPSIS
+
+S<B<timeTest <test script>>>
+
+=head1 DESCRIPTION
+
+B<timeTest> runs and times commands in a test script.
+The test script can be specified on the command line
+or piped in as standard input.
+
+The test script is composed of blocks of comments and commands.
+The test script must start and stop with a comments and can
+contain an arbitrary number of command blocks separated by
+comment blocks.  A line beginning with the '#' character
+is a comment line and a line that does not is a command line.
+Any number of comment or command lines can be in each block.
+
+Each command block will be timed when executed and a total
+elapsed time will be reported for the whole script.
+
+Example test script for timeTest:
+
+    # test 2 for timeTest
+    # step 1 for timeTest
+    
+    sleep 3;
+    echo 'We slept 3 seconds!'
+    
+    # step 2 for timeTest
+    
+    sleep 2;
+    echo 'We slept 2 seconds!'
+    
+    # step 3 for timeTest
+    
+    sleep 1;
+    echo 'We slept 1 seconds!'
+    
+    # End - test1 for timeTest
+
+Note that an actual test script cannot include leading space
+before the '#' character on comment lines.
+
+=head1 ENVIRONMENT VARIABLES
+
+B<timeTest> can use Environment Variables exported outside of
+the script.  Environment Variables can be set and used in a
+single block.
+
+Environment Variables set in one block are no longer available
+when the block ends even when exported.
+
+=head1 RELEASE NOTES
+
+=over 4
+
+=item Version 1.7 - February 3, 2013 - LAM@HTL
+
+Added do_block subroutine that uses capture_exec
+of IO::CaptureOutput perl module.
+
+This allows STDERR and exit_status to be printed
+for each block as well as STDOUT.
+
+=back
+
+=over 4
+
+=item Version 1.0 - January 17, 2013 - LAM@HTL
+
+Created this script.
+
+=back
+
+=cut
+
+use Time::HiRes qw(time);
+
+my $startTime = time();
+my $command = "";
+my $complete = 0; # command not yet complete
+while(<>) {
+  if (/^#/) { # If comment line
+    if ($complete) { # If command to process
+    my $startTime = time(); # time
+
+    do_block($command);          # Execute the command block and print output
+
+    $command = ""; $complete = 0;
+
+    print 'Step complete ', timemark(), ' - ', elapsedTime(time() - $startTime), "\n";
+    }
+  }
+  else { # If not a comment line
+    $command .= $_; $complete = 1;
+  }
+  print;
+}
+print 'Test complete ', timemark(), ' - ', elapsedTime(time() - $startTime), " total\n";
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub elapsedTime # format seconds into days, hours, minutes, seconds elapsed.
+{
+my $s = shift(@_);
+my $r = '';
+if ($s > 86399) # ((60*60*24)-1) = 86399 then calculate days
+ {
+   my $t = int($s / 86400);
+   if ($t > 1) { $r = "$t days"}
+   else { $r = "$t day"}
+   $s = $s % 86400;
+ }
+if ($s > 3599) # ((60*60)-1) = 3599 then calculate hours
+ {
+   my $t = int($s / 3600);
+   if ((length $r) > 1) {$r .= ", "}
+   if ($t > 1) { $r .= "$t hours"}
+   else { $r .= "$t hour"}
+   $s = $s % 3600;
+ }
+if ($s > 59) # then calculate minutes
+ {
+   my $t = int($s / 60);
+   if ((length $r) > 1) {$r .= ", "}
+   if ($t > 1) { $r .= "$t minutes"}
+   else { $r .= "$t minute"}
+   $s = $s % 60;
+ }
+if ($s >= 0) # then calculate seconds
+ {
+   if ((length $r) > 1) {$r .= ", "}
+   if ($s > 1) { $r .= "$s seconds"}
+   else { $r .= "$s second"}
+ }
+if ((length $r) > 1) {$r .= " elapsed"}
+return($r);
+}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub timemark {
+# Get the date and time
+($Second, $Minute, $Hour, $Day_Of_Month, $Month, $Year,
+  $Day_Of_Week)
+  = localtime(time);
+#
+# Define a list with months of the year as it's contents.
+@Month = ('January', 'February', 'March', 'April', 'May',
+          'June', 'July', 'August', 'September', 'October',
+          'November', 'December');
+#
+# Define a list with days of the week as it's contents.
+@Days = ('Sunday', 'Monday', 'Tuesday', 'Wednesday',
+         'Thursday', 'Friday', 'Saturday');
+#
+# Define values	for a 12 hour clock
+if($Hour < 1)     { $H12 = $Hour + 12; $AM_PM = 'AM'; }
+elsif($Hour < 12) { $H12 = $Hour;      $AM_PM = 'AM'; }
+elsif($Hour < 13) { $H12 = $Hour;      $AM_PM = 'PM'; }
+else              { $H12 = $Hour - 12; $AM_PM = 'PM'; }
+#
+my $rValue = '';
+# Return the formatted date and time
+$rValue = "$Days[$Day_Of_Week], $Month[$Month] ". $Day_Of_Month;
+$rValue .= ', '. ($Year + 1900) . ' @ ' . $H12;
+$rValue .= sprintf(":%.2d:%.2d ", $Minute, $Second);
+$rValue .= $AM_PM;
+return $rValue;
+}
+# ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
+sub do_block { # Execute the command block and print output
+
+my $cmd = shift;
+
+use IO::CaptureOutput qw(capture_exec);
+
+my($stdout, $stderr, $success, $rc) = capture_exec($cmd);
+
+if ($stdout) {
+print "$stdout\n";
+}
+
+if ($rc == -1) {
+    print "Block failed to execute: $stderr\n";
+    exit -1;
+} elsif ($rc & 127) {
+    printf "Block died - signal %d, %s coredump\n",
+           ($rc & 127), ($rc & 128) ? 'with' : 'without';
+    if ($stderr) {
+        print "$stderr\n";
+    }
+    exit $rc >> 8;
+} elsif ($rc) {
+    printf "ERROR: Block exited with Return Code: %d\n", $rc >> 8;
+    if ($stderr) {
+        print "$stderr\n";
+    }
+    exit $rc >> 8;
+} else {
+    if ($stderr) {
+        if (!$rc) {
+            print "ERROR: Block exited with Error Text:\n"
+        }
+    print "$stderr\n";
+    }
+}
+}
