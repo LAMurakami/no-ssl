@@ -99,4 +99,5 @@ and Private scripts of the sites.
 
 See Also:
 * [aws repo README.md](https://github.com/LAMurakami/aws#readme)
+* [arsc repo README.md](https://github.com/LAMurakami/arsc#readme)
 * [ubuntu-etc repo README.md](https://github.com/LAMurakami/ubuntu-etc#readme) Ubuntu Server 20.04 configuration changes for LAM AWS VPC EC2 instances
