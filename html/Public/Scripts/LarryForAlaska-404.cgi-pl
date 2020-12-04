@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: LarryForAlaska-404.cgi-pl,v 1.7 2020/02/03 03:07:39 ubuntu Exp ubuntu $
+# $Id: LarryForAlaska-404.cgi-pl,v 1.6 2020/01/04 11:16:50 lam Exp lam $
 
 use LAM::LAM qw(displaySource displayPage);                # Lexicon Abstact Map
 use CGI qw(:all);                        # Perl Common Gateway Interface package
@@ -21,10 +21,10 @@ my $paidForNotice =  <<ENDpaidForNotice;
 <center>
 <h1>Larry Murakami for Alaska</h1>
 
-Larry for Alaska<br>
+This communication is paid for by Larry Murakami for Alaska<br>
 P.O. Box 58553 Fairbanks Alaska 99711<br>
 907-978-0260 <a href="http://LarryForAlaska.com/">LarryForAlaska.com</a>
-<form method="get" action="/Donate" target="_blank">
+<form method="get" action="http://democracy.com/LarryForAlaska/donate.aspx#form" target="_blank">
 <input type="submit" class="big-round-button" value="Donate" />
 </form>
 </center>
@@ -42,21 +42,35 @@ ENDm1
 
 my $m2 = <<ENDm2;
 
-<h1>I am no longer taking political donations.</h1>
+<center>
+<table><tr><td>
+<h1>Larry for Alaska</h1>
+</td><td> &nbsp; &nbsp; &nbsp; </td><td>
+<form method="get" action="http://democracy.com/LarryForAlaska/donate.aspx#form" target="_blank">
+<input type="submit" class="big-round-button" value="Donate" />
+</form>
+</td><td> &nbsp; &nbsp; &nbsp; </td><td>
+</td></tr></table>
+</center>
 
-<h2>I am Larry Murakami</h2><br>
-<h3>I ran for the Alaska State House
-to represent the East side District of Fairbanks in 2014.
-</h3>
+<h2> I am Larry Murakami</h2>
+<h3>I am running for the Alaska State House
+ to represent the East side District of Fairbanks. </h3>
 
 ENDm2
 ;
 
 my $m3 = <<ENDm3;
+<p>I will win this election as someone on your side on issues such as the economy,
+ education and veterans affairs.
+<p>I want to return to a time when a bi-partisan coalition in Juneau
+ was working towards common goals of the people of Alaska.
+<p>Now is not the time to reduce educational funding
+ so Alaska, the owner state, can take a smaller share of oil revenue.
 
-<p>I have been a resident of Alaska since 1962 shortly after statehood and a resident of the Fairbanks area since my time in the Navy during the Vietnam War in the 1970s. I went to grade school at Browns Court School near Clear Alaska, graduated High School at Tri-Valley School in Healy, Alaska and received multiple degrees from the University of Alaska Fairbanks.
+<p>I have been a resident of Alaska since 1962 and a resident of the Fairbanks area for over 35 years. I went to grade school at Browns Court School near Clear Alaska and graduated High School at Tri-Valley School in Healy, Alaska.
 
-<p>I retired from the <a href="https://en.wikipedia.org/wiki/Arctic_Region_Supercomputing_Center">Arctic Region Supercomputing Center</a> (ARSC), not coincidentally, the same day they ceased to exist on August 31, 2015.  ARSC was an institution of the University of Alaska Fairbanks and my position was funded by the Department of Defence.  Earlier this century I worked on Fort Wainwright as an Army Civilian.
+<p>I am a veteran of the Vietnam War and am currently an employee of the University of Alaska Fairbanks. Ten years ago I worked on Fort Wainwright as an Army Civilian. My current position at the University of Alaska is funded by the Department of Defense so I have worked with the military under multiple roles.
 
 <p>I hope you will remember Larry Murakami as an advocate for the people of Alaska. 
 

@@ -1,1 +1,1 @@
-export LOCATE_PATH=/mnt/efs/mlocate.db
+export LOCATE_PATH=/mnt/Bk0/mlocate.db
