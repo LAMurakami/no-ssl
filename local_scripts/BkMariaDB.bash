@@ -1,7 +1,7 @@
 #! /bin/bash
 
-BS=ak17
-BD=/mnt/Bk0/Bk/${BS}/Day/$(date +'%y%m%d')
+BS=ak20
+BD=/mnt/ak20-Bk/Bk2/${BS}/Day/$(date +'%y%m%d')
 
 # Put the daily lam and wikidb backups in S3
 
