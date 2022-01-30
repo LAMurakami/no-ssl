@@ -16,6 +16,7 @@ print '<head>', "\n";
 print '<meta http-equiv="refresh" content="', $delay, '; url=', "'";
 print $page, "'";
 print '" />', "\n";
+print '<title>Redirects to', $page, '</title>', "\n";
 print '</head>', "\n";
 print '<body>', "\n";
 print '<p>Redirects to <a href="';
