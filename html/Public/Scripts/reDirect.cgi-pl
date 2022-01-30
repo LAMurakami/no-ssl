@@ -21,7 +21,8 @@ print '</head>', "\n";
 print '<body>', "\n";
 print '<p>Redirects to <a href="';
 print $page;
-print '">', $page, '</a>.</p>', "\n";
+print '">', $page, '</a><br>', "\n";
+print "after a $delay seconds delay.</p>\n";
 print '</body>', "\n";
 print '</html>', "\n";
 }
