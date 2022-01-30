@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+use warnings;  # Enable all warnings.
+
+reDirect(5,$ARGV[0]);
+#---:----|----:----|----:----|----:----|----:----|----:----|----:----|----:----|
+sub reDirect { # reDirect($delay,$page)
+my $delay = shift;
+my $page = shift;
+
+print "Content-type:text/html\r\n\r\n";
+print '<!DOCTYPE html', "\n";
+print '          PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"', "\n";
+print '          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">', "\n";
+print '<html>';
+print '<head>', "\n";
+print '<meta http-equiv="refresh" content="', $delay, '; url=', "'";
+print $page, "'";
+print '" />', "\n";
+print '</head>', "\n";
+print '<body>', "\n";
+print '<p>Redirects to <a href="';
+print $page;
+print '">', $page, '</a>.</p>', "\n";
+print '</body>', "\n";
+print '</html>', "\n";
+}
