@@ -13,7 +13,7 @@ our @EXPORT     = qw(displayPage);
 our @EXPORT_OK  = qw(displayError displayPage emailAddress datetime viewFormData
                      environmentVariables commify displayTextFile timemark
                      displayRCSlog displayRCSdiff displaySource htmlHead
-                     getTextFile namedParameters fixString checkSSL);
+                     getTextFile namedParameters fixString checkSSL reDirect);
 our @VERSION    = 1.0;
 # ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
 sub emailAddress { return
@@ -138,22 +138,34 @@ my $oP = ''; if ("\L$ARGV[0]") {$oP = "\L$ARGV[0]";                    opTest: {
     if ($oP eq 'source') {displayTextFile(); last opTest}       # Display source
     if ($oP eq 'rlog') {displayRCSlog(); last opTest}          # Display RCS log
     if ($oP eq 'diff') {displayRCSdiff(); last opTest}        # Display RCS diff
-    if ($oP eq 'lam.pm') {displayTextFile($LAMpmDir.'/LAM.pm'); last opTest}
-    if ($oP eq 'multicount.pm') {displayTextFile($LAMpmDir.'/Multicount.pm');
-     last opTest}
-    if ($oP eq 'sql.pm') {displayTextFile($LAMpmDir.'/SQL.pm'); last opTest}
-    if ($oP eq 'getdbvalue.pm') {displayTextFile($LAMpmDir.'/GetDBvalue.pm');
-     last opTest}   }   }                                          # end opTest:
+    if ($oP eq 'lam.pm') {
+reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/LAM.pm");
+                          last opTest}
+    if ($oP eq 'multicount.pm') {
+reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/Multicount.pm");
+                          last opTest}
+    if ($oP eq 'sql.pm') {
+reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/SQL.pm");
+                          last opTest}
+    if ($oP eq 'getdbvalue.pm') {
+reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/GetDBvalue.pm");
+                          last opTest}   }   }                     # end opTest:
 my $pI = ''; if ($ENV{PATH_INFO}) {$pI = "\L$ENV{PATH_INFO}";        pathTest: {
     if ($pI eq '/source') {displayTextFile(); last pathTest}    # Display source
     if ($pI eq '/rlog') {displayRCSlog(); last pathTest}       # Display RCS log
     if ($pI eq '/diff') {displayRCSdiff(); last pathTest}     # Display RCS diff
-    if ($pI eq '/lam.pm') {displayTextFile($LAMpmDir.'/LAM.pm'); last pathTest}
-    if ($pI eq '/multicount.pm') {displayTextFile($LAMpmDir.'/Multicount.pm');
-     last pathTest}
-    if ($pI eq '/sql.pm') {displayTextFile($LAMpmDir.'/SQL.pm'); last pathTest}
-    if ($pI eq '/getdbvalue.pm') {displayTextFile($LAMpmDir.'/GetDBvalue.pm');
-     last pathTest}   }    }                                     # end pathTest:
+    if ($pI eq '/lam.pm') {
+reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/LAM.pm");
+                          last pathTest}
+    if ($pI eq '/multicount.pm') {
+reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/Multicount.pm");
+                          last pathTest}
+    if ($pI eq '/sql.pm') {
+reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/SQL.pm");
+                          last pathTest}
+    if ($pI eq '/getdbvalue.pm') {
+reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/GetDBvalue.pm");
+                          last pathTest}   }    }                # end pathTest:
 if (param('Submit')) {my $submitRequest = param('Submit');     
     if ($submitRequest eq 'View') {if (param('Plain')) {
             if (param('Text File') and $ENV{HTTPS} and cookie(-name=>'logon')) {
@@ -373,4 +385,28 @@ $_ = shift;  # String is parameter
 s/'/''/g;    # fix single quotes
 s/\\/\\\\/g; # fix backslash characters
 return $_     }
+# --:----|----:----|----:----|----:----|----:----|----:----|----:----|----:----|
+sub reDirect { # reDirect($delay,$page)
+my $delay = shift;
+my $page = shift;
+
+print "Content-type:text/html\r\n\r\n";
+print "<!DOCTYPE html\n";
+print '          PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"', "\n";
+print '          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">', "\n";
+print '<html>';
+print "<head>\n";
+print '<meta http-equiv="refresh" content="', $delay, '; url=', "'";
+print $page, "'";
+print '" />', "\n";
+print "<title>Redirects to $page </title> \n";
+print "</head>\n";
+print "<body>\n";
+print '<p>Redirects to <a href="';
+print $page;
+print '">', $page, '</a><br>', "\n";
+print "after a $delay seconds delay.</p>\n";
+print "</body>\n";
+print "</html>\n";
+}
 # ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
