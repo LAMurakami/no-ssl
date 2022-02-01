@@ -134,8 +134,16 @@ $htmlString .= "</td></tr></table>\n";
 return $htmlString}
 # ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
 sub displaySource {                                         displaySourceTest: {
+my $sourceLink;
+my $parameterCount = @_;
+if ($parameterCount > 0) {$sourceLink = shift}
 my $oP = ''; if ("\L$ARGV[0]") {$oP = "\L$ARGV[0]";                    opTest: {
-    if ($oP eq 'source') {displayTextFile(); last opTest}       # Display source
+    if ($oP eq 'txt') {displayTextFile(); last opTest}          # Display source
+    if ($oP eq 'source') {                                      # Display source
+      if ( ! defined $sourceLink || $sourceLink eq "" )
+        {displayTextFile()}
+      else {reDirect(0,$sourceLink)} # reDirect($delay,$page)
+      last opTest}
     if ($oP eq 'rlog') {displayRCSlog(); last opTest}          # Display RCS log
     if ($oP eq 'diff') {displayRCSdiff(); last opTest}        # Display RCS diff
     if ($oP eq 'lam.pm') {
@@ -151,7 +159,12 @@ reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/SQL.p
 reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/GetDBvalue.pm");
                           last opTest}   }   }                     # end opTest:
 my $pI = ''; if ($ENV{PATH_INFO}) {$pI = "\L$ENV{PATH_INFO}";        pathTest: {
-    if ($pI eq '/source') {displayTextFile(); last pathTest}    # Display source
+    if ($pI eq '/txt') {displayTextFile(); last pathTest}       # Display source
+    if ($pI eq '/source') {                                     # Display source
+      if ( ! defined $sourceLink || $sourceLink eq "" )
+        {displayTextFile()}
+      else {reDirect(0,$sourceLink)} # reDirect($delay,$page)
+      last pathTest}
     if ($pI eq '/rlog') {displayRCSlog(); last pathTest}       # Display RCS log
     if ($pI eq '/diff') {displayRCSdiff(); last pathTest}     # Display RCS diff
     if ($pI eq '/lam.pm') {

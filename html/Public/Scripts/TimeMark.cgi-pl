@@ -8,7 +8,8 @@ use CGI qw(:all); # Load standard CGI functions.
 use strict;      # Force me to use strict variable syntax.
 use warnings;   # Enable all warnings.
 
-LAM::displaySource(); # Display source, rlog, etc. if requested.
+LAM::displaySource(                   # Display source, rlog, etc. if requested.
+"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/TimeMark.cgi-pl");
 
 my $refererPage = '';
 if ($ENV{HTTP_REFERER}) {$refererPage = $ENV{HTTP_REFERER}}
