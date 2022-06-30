@@ -42,15 +42,6 @@ check_dir "logrotate.d" "/etc" \
 cp ${source_dir}/no-ssl_apache2-logrotate.conf ${logrotate_conf_dir}/apache2
 
 echo
-echo "Configuring mlocate path to use /mnt/efs database"
-
-mlocate_path_conf_dir='/etc/profile.d';
-check_dir "profile.d" "/etc" \
-"mlocate path configuration directory is not where expected."
-
-ln -s ${source_dir}/mlocate.sh ${mlocate_path_conf_dir}
-
-echo
 echo "Configuring php for apache2"
 
 php_conf_dir='/etc/php/7.4/apache2';
