@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: BkRsync.pl,v 1.6 2019/12/29 04:39:06 lam Exp lam $
+# /var/www/no-ssl/local_scripts/BkRsync-remote-source.pl    # In no-ssl git repo
 #
 use warnings;                                              # Enable all warnings
 use strict;                             # Force me to use strict variable syntax
