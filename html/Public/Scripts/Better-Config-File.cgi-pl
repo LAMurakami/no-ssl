@@ -1,17 +1,18 @@
 #!/usr/bin/perl
-# $Id: Better-Config-File.cgi-pl,v 1.7 2009/01/23 12:13:12 lam Exp lam $
 
 use LAM::LAM qw(displaySource displayPage getTextFile);    # Lexicon Abstact Map
 use CGI qw(:all);                        # Perl Common Gateway Interface package
 use strict;                            # Force me to use strict variable syntax.
 use warnings;                                                 # Enable warnings.
 
-LAM::displaySource();                 # Display source, rlog, etc. if requested.
+LAM::displaySource(                   # Display source, rlog, etc. if requested.
+"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/Better-Config-File.cgi-pl");
 
 my $ProgramHead1 = "<center><h1><a href=" . '"/About/Program/Better-Config-File">'
        . "Better Configuration File</a> parameters</h1>\n\n";
 
-my $cfDir = '/etc/LAM'; my $cfFile = "$cfDir/Better-Configuration-File.conf";
+my $cfDir = '/var/www/no-ssl/html/Public/Content';
+my $cfFile = "$cfDir/Better-Configuration-File.conf";
 open (CONFIG, $cfFile)                                 # Open configuration file
  or LAM::displayPage('-e', "Cannot open configuration file",   # or report error
   "\nConfiguration file: <b>$cfFile</b> NOT opened!\n",
