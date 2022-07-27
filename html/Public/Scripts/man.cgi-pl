@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id: man.cgi-pl,v 1.31 2017/08/01 09:48:16 lam Exp lam $
 
 use LAM::LAM qw(displaySource displayPage viewFormData);   # Lexicon Abstact Map
 use CGI qw(:all);                        # Perl Common Gateway Interface package

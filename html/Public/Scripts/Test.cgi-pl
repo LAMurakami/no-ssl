@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id: Test.cgi-pl,v 1.1 2007/09/27 09:13:32 lam Exp lam $
 
 use LAM::LAM qw(displaySource displayPage namedParameters viewFormData
                 getTextFile);
@@ -8,7 +7,8 @@ use CGI qw(:all); # CGI - load standard functions
 use strict;     # Force me to use strict variable syntax.
 use warnings;  # Enable all warnings.
 
-LAM::displaySource(); # Display source, rlog, etc. if requested.
+LAM::displaySource(                   # Display source, rlog, etc. if requested.
+"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/Test.cgi-pl");
 
 if (param('Submit')) { my $submitRequest = param('Submit');
 	if ($submitRequest eq 'View Form Data') {LAM::viewFormData()}

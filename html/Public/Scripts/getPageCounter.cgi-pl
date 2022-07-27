@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id: getPageCounter.cgi-pl,v 1.1 2007/09/10 06:09:52 lam Exp lam $
 
 use LAM::LAM qw(displaySource displayPage displayTextFile
 				displayRCSlog viewFormData);
@@ -7,7 +6,8 @@ use CGI qw(:all); # Perl Common Gateway Interface package
 use strict;     # Force me to use strict variable syntax.
 use warnings;  # Enable all warnings.
 
-LAM::displaySource(); # Display source, rlog, etc. if requested.
+LAM::displaySource(                   # Display source, rlog, etc. if requested.
+"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/getPageCounter.cgi-pl");
 
 my $submitRequest = '';	# Handle Submit Option
 if (param('Submit')) { my $submitRequest = param('Submit');
@@ -22,7 +22,7 @@ if (param('Submit')) { my $submitRequest = param('Submit');
 LAM::displayPage('-c', '',  start_form()
 	. "\nFile: "
 	. textfield({-name=>'File', -maxlength=>255, -size=>80,
-	-value=>"_var_www_html_Public_Scripts_no_ssl_Index_cgi_pl"})
+	-value=>"_var_www_no_ssl_html_Index_cgi_pl_HTTPS_OFF"})
 	. br(). br(). "\n". "\n". br()
 	. div({-align=>'center'}
 		, submit({-name=>'Submit',-value=>'View'}), "\n"

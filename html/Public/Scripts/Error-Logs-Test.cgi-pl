@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id: Error-Logs-Test.cgi-pl,v 1.11 2007/09/12 07:41:23 root Exp root $
 
 use CGI qw(:all);                               # CGI - Load standard functions.
 use strict;                            # Force me to use strict variable syntax.

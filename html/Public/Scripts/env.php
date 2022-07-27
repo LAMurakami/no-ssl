@@ -1,5 +1,4 @@
 <html><head>
-<!-- $Id: env.php,v 1.5 2007/09/03 09:09:38 lam Exp lam $ -->
 
 <title> Environment/Server Variables </title>
 

@@ -1,15 +1,12 @@
 #!/usr/bin/perl
-# $Id: SSL.cgi-pl,v 1.5 2006/06/26 01:36:44 lam Exp $
 
-use LAM::LAM qw(displayError displayTextFile checkSSL);
+use LAM::LAM qw(displayError displaySource checkSSL);
 use LAM::Multicount qw(webPageCounter);
 use CGI qw(:all);
 use strict;     # Force me to use strict variable syntax.
 
-if ("\L$ARGV[0]" eq 'source') {LAM::displayTextFile()} # Display source text
-if ("\L$ARGV[0]" eq 'lam.pm') {LAM::displayTextFile('LAM')} # if requested.
-if ("\L$ARGV[0]" eq 'multicount.pm')
- {LAM::displayTextFile('/usr/lib/perl5/site_perl/LAM/Multicount.pm')}
+LAM::displaySource(                   # Display source, rlog, etc. if requested.
+"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/SSL.cgi-pl");
 
 {LAM::checkSSL(); # Display this content only if SSL is being used.
 

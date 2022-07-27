@@ -1,11 +1,11 @@
 #!/usr/bin/perl
-# $Id: Error-403.cgi-pl,v 1.2 2009/01/11 09:48:43 lam Exp lam $
 
 use LAM::LAM qw(displaySource displayPage);                # Lexicon Abstact Map
 use CGI qw(:all);                        # Perl Common Gateway Interface package
 use strict;                            # Force me to use strict variable syntax.
 use warnings;                                                 # Enable warnings.
-LAM::displaySource();                 # Display source, rlog, etc. if requested.
+LAM::displaySource(                   # Display source, rlog, etc. if requested.
+"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/Error-403.cgi-pl");
 
 my $errorType
  = '403 Access forbidden!';            # 403 Access forbidden! http server error

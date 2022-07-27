@@ -2,7 +2,8 @@
 
 use CGI ':standard';
 use LAM::LAM qw(displaySource htmlHead menuBar);
-LAM::displaySource(); # Display source, rlog, etc. if requested.
+LAM::displaySource(                   # Display source, rlog, etc. if requested.
+"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/Forms-Test.cgi-pl");
 
 print LAM::htmlHead($html_title), LAM::menuBar(),"\n";
     
