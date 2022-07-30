@@ -1,4 +1,3 @@
-# $Id: LAM.pm,v 1.78 2017/07/17 08:54:19 lam Exp lam $
 package     LAM;   # Lexicon Abstract Map
 use strict;       # Force me to use strict variable syntax.
 use warnings;    # Enable all warnings.
@@ -257,7 +256,7 @@ ENDhtmlHead1
 ;
 my $htmlHead2 = <<ENDhtmlHead2;
 </title>
-<meta name="Author" content="q.ServerAdmin\@lam1.us" />
+<meta name="Author" content="q.ServerAdmin\@LAMurakami.com" />
 <!--
                               By: Lawrence A. Murakami - Fairbanks, Alaska -->
 
