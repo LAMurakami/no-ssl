@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id: TimeMark.cgi-pl,v 1.18 2017/02/02 06:16:32 lam Exp lam $
 #
 use LAM::LAM qw(timemark environmentVariables namedParameters
               htmlHead menuBar displayPage displaySource);
@@ -76,7 +75,7 @@ print '<a href="/"><font size=+2>', $date_and_time ,'</font></a>',
 }
 # ..:....|....:....|....:....|....:....|....:....|....:....|....:....|....:....|
 sub special_case {$Special_Case = 'No'; specialCase: {
-my $oP = ''; if ("\L$ARGV[0]") {$oP = "\L$ARGV[0]";
+my $oP = ''; if(defined $ARGV[0]){ $oP = $ARGV[0];
 	if ($oP eq 'lam')   {$Special_Case = 'lam'; last specialCase}
 	if ($oP eq 'user')  {$Special_Case = 'user'; last specialCase}}
 my $pI = ''; if ($ENV{PATH_INFO}) {$pI = "\L$ENV{PATH_INFO}";
