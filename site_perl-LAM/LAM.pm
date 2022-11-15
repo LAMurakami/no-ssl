@@ -135,8 +135,8 @@ return $htmlString}
 sub displaySource {                                         displaySourceTest: {
 my $sourceLink;
 my $parameterCount = @_;
-if ($parameterCount > 0) {$sourceLink = shift}
-my $oP = ''; if ("\L$ARGV[0]") {$oP = "\L$ARGV[0]";                    opTest: {
+if ($parameterCount > 0) {$sourceLink = shift};
+my $oP = ''; if(defined $ARGV[0]){ $oP = $ARGV[0];                     opTest: {
     if ($oP eq 'txt') {displayTextFile(); last opTest}          # Display source
     if ($oP eq 'source') {                                      # Display source
       if ( ! defined $sourceLink || $sourceLink eq "" )
