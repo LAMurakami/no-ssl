@@ -12,7 +12,8 @@ LAM::displaySource();                 # Display source, rlog, etc. if requested.
 my $hostName = qx(uname -n | cut --delimiter=. --fields=1);   # Report Host Name
 
 my $dfCommand = '/bin/df -Th -x supermount';
-if ((param('tmpfs') == 0))  # Use tmpfs=1 to include temp file systems in report
+my $tmpfs = 0 ; if (defined param('tmpfs')) { $tmpfs = param('tmpfs') }
+if (($tmpfs == 0))  # Use tmpfs=1 to include temp file systems in report
  {$dfCommand .= ' --exclude-type=tmpfs --exclude-type=devtmpfs'}
 my $result = qx($dfCommand);  # Get results: file system disk space usage report
 
