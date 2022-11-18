@@ -1,6 +1,4 @@
 #!/usr/bin/perl
-# $Id: df.cgi-pl,v 1.8 2017/02/14 06:15:23 lam Exp lam $
-
 
 use LAM::LAM qw(displaySource displayPage);                # Lexicon Abstact Map
 use CGI qw(:all);                        # Perl Common Gateway Interface package
