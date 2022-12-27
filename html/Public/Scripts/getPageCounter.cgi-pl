@@ -22,7 +22,7 @@ if (param('Submit')) { my $submitRequest = param('Submit');
 LAM::displayPage('-c', '',  start_form()
 	. "\nFile: "
 	. textfield({-name=>'File', -maxlength=>255, -size=>80,
-	-value=>"_var_www_no_ssl_html_Index_cgi_pl_HTTPS_OFF"})
+	-value=>"/var/www/Multicount/_var_www_no_ssl_html_Public_Scripts_getPageCounter_cgi_pl"})
 	. br(). br(). "\n". "\n". br()
 	. div({-align=>'center'}
 		, submit({-name=>'Submit',-value=>'View'}), "\n"
