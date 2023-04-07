@@ -1,11 +1,11 @@
 #!/usr/bin/perl
-# $Id: Error-404.cgi-pl,v 1.7 2008/04/06 03:50:22 lam Exp lam $
 
 use LAM::LAM qw(displaySource displayPage);                # Lexicon Abstact Map
 use CGI qw(:all);                        # Perl Common Gateway Interface package
 use strict;                            # Force me to use strict variable syntax.
 use warnings;                                                 # Enable warnings.
-LAM::displaySource();                 # Display source, rlog, etc. if requested.
+LAM::displaySource(                   # Display source, rlog, etc. if requested.
+"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/Interior-Democrats-Error-404.cgi-pl");
 
 my $errorType = '404 Not Found!';        # 404 Page Not Found! http server error
 

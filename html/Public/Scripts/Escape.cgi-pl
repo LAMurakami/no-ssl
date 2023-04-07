@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id: Escape.cgi-pl,v 1.9 2007/09/13 10:17:39 lam Exp lam $
 
 use LAM::LAM qw(displayPage displaySource viewFormData);
 use CGI qw(:all escape unescape);

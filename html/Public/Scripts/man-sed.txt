@@ -1,5 +1,4 @@
 #!/bin/sed -f
-# $Id: man-sed.txt,v 1.3 2012/07/23 02:32:17 lam Exp lam $
 # file of sed commands to preprocess man pages before passing them
 # to the man2html program which can't handle some macros.
 #

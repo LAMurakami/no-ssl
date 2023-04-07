@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# $Id: IPStatusPage.pl,v 1.7 2015/05/09 07:38:20 lam Exp lam $
 
 my $cfDir = '/etc/LAM'; my $configFile = "$cfDir/IPStatus.conf";
 open (CONFIG, $configFile)                             # Open configuration file
@@ -96,7 +97,7 @@ my $page = <<END_OF_PAGE;
 <head><title>LAM Alaska Connection Status</title>
 <link rel="Shortcut Icon" href="favicon.ico" />
 <link rel="stylesheet" type="text/css" href="Public/Style.css" />
-<meta name="Author" content="www.ServerAdmin\@LAMurakami.com" />
+<meta name="Author" content="www.ServerAdmin\@lam1.us" />
 <!--
                               By: Lawrence A. Murakami - Fairbanks, Alaska -->
 

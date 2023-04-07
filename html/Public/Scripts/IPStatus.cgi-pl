@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id: IPStatus.cgi-pl,v 1.29 2014/07/27 05:23:52 lam Exp ubuntu $
 
 use LAM::LAM qw(displaySource displayPage viewFormData
                                               timemark);   # Lexicon Abstact Map
@@ -7,7 +6,8 @@ use CGI qw(:all);                        # Perl Common Gateway Interface package
 use strict;                            # Force me to use strict variable syntax.
 use warnings;                                                 # Enable warnings.
 
-LAM::displaySource();                 # Display source, rlog, etc. if requested.
+LAM::displaySource(                   # Display source, rlog, etc. if requested.
+"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/IPStatus.cgi-pl");
 
 my $ProgramHead1 = "<center><h1>LAM Alaska Connection Status<br>\n"
                  . '(<a href="/About/Program/IPStatus">IPStatus</a>)'

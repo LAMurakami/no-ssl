@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id: menuBar.cgi-pl,v 1.3 2007/10/16 07:52:59 lam Exp lam $
 
 use LAM::LAM qw(displaySource htmlHead menuBar);           # Lexicon Abstact Map
 use CGI qw(:all);                               # CGI - Load standard functions.
