@@ -78,7 +78,7 @@ sub special_case {$Special_Case = 'No'; specialCase: {
 my $oP = ''; if(defined $ARGV[0]){ $oP = $ARGV[0];
 	if ($oP eq 'lam')   {$Special_Case = 'lam'; last specialCase}
 	if ($oP eq 'user')  {$Special_Case = 'user'; last specialCase}}
-my $pI = ''; if ($ENV{PATH_INFO}) {$pI = "\L$ENV{PATH_INFO}";
+my $pI = ''; if ($ENV{PATH_INFO}) {$pI = "$ENV{PATH_INFO}";
     if ($pI eq '/lam')  {$Special_Case = 'lam'; last specialCase}
 	if ($oP eq '/user') {$Special_Case = 'user'; last specialCase}}
 if (param('lam')) {$Special_Case = param('lam');
