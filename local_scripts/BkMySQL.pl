@@ -3,11 +3,20 @@
 # https://q.lam1.us/Comments?Topic=Program;Name=BkSource.pl;Submit=View
 use warnings;                                              # Enable all warnings
 use strict;                             # Force me to use strict variable syntax
-my $programName = '';$0 =~ m@.*/(.*)@ and $programName = $1; # path/$programName
 
-my $cfDir = '/etc/Backup'; my $configFile = "$cfDir/$programName.conf";
-open (CONFIG, $configFile)                                  # configuration file.
- or die "Run time error: $0\nConfiguration file: $configFile NOT opened!\n$!\n\n";
+my $programName = '';$0 =~ m@.*/(.*)@ and $programName = $1; # path/$programName
+my $programPath = '';$0 =~ m@(.*/).*@ and $programPath = $1; # $programPath/Name
+
+my $openConfigFailed = '0';
+my $configFile = "$programPath$programName.conf";           # configuration file
+open (CONFIG, $configFile) or $openConfigFailed = '1';
+
+if ($openConfigFailed) {                             # If open config file fails
+ my $cfDir = '/etc/Backup'; $configFile = "$cfDir/$programName.conf";
+ open (CONFIG, $configFile)         # configuration file from alternate location
+ or die "Run time error: $0\nConfiguration file: $programName.conf NOT opened" .
+                                       " from $programPath or $cfDir/!\n$!\n\n";
+}
 
 my $bkDir = ''; chop($bkDir = <CONFIG>);                # backup target directory
 my $bkList = ''; chop($bkList = <CONFIG>);                          # backup list
