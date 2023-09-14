@@ -7,10 +7,18 @@ use strict;                             # Force me to use strict variable syntax
 use IO::CaptureOutput qw(capture_exec);
 
 my $programName = '';$0 =~ m@.*/(.*)@ and $programName = $1; # path/$programName
+my $programPath = '';$0 =~ m@(.*/).*@ and $programPath = $1; # $programPath/Name
 
-my $cfDir = '/etc/Backup'; my $configFile = "$cfDir/$programName.conf";
-open (CONFIG, $configFile)                                  # configuration file.
- or die "Run time error: $0\nConfiguration file: $configFile NOT opened!\n$!\n\n";
+my $openConfigFailed = '0';
+my $configFile = "$programPath$programName.conf";           # configuration file
+open (CONFIG, $configFile) or $openConfigFailed = '1';
+
+if ($openConfigFailed) {                             # If open config file fails
+ my $cfDir = '/etc/Backup'; $configFile = "$cfDir/$programName.conf";
+ open (CONFIG, $configFile)         # configuration file from alternate location
+ or die "Run time error: $0\nConfiguration file: $programName.conf NOT opened" .
+                                       " from $programPath or $cfDir/!\n$!\n\n";
+}
 
 my %cF = loadConfigHash();                  # Load Configuration Parameters hash!
 close(CONFIG);
