@@ -51,23 +51,23 @@ fi
 cp -p $base_dir/apache2.conf /etc/apache2/apache2.conf
 
 echo
-echo 'Enabling 000-no-ssl site and disabling 000-default site'
-if [ -L $apache2_sites_available_dir/000-no-ssl.conf ]; then
-    file $apache2_sites_available_dir/000-no-ssl.conf
-    rm /etc/apache2/sites-available/000-no-ssl.conf
-    echo "$apache2_sites_available_dir/000-no-ssl.conf removed"
+echo 'Enabling 999-no-ssl site and disabling 000-default site'
+if [ -L $apache2_sites_available_dir/999-no-ssl.conf ]; then
+    file $apache2_sites_available_dir/999-no-ssl.conf
+    rm /etc/apache2/sites-available/999-no-ssl.conf
+    echo "$apache2_sites_available_dir/999-no-ssl.conf removed"
 fi
-if [ -f $apache2_sites_available_dir/000-no-ssl.conf ]; then
-    file $apache2_sites_available_dir/000-no-ssl.conf
-    echo "$apache2_sites_available_dir/000-no-ssl.conf is a regular file"
+if [ -f $apache2_sites_available_dir/999-no-ssl.conf ]; then
+    file $apache2_sites_available_dir/999-no-ssl.conf
+    echo "$apache2_sites_available_dir/999-no-ssl.conf is a regular file"
     echo "$0 will not replace a regular file with a symbolic link."
     exit
 fi
-ln -s $base_dir/${sub_dir}_apache2.conf $apache2_sites_available_dir/000-no-ssl.conf
-if [ ! -f $apache2_sites_enabled_dir/000-no-ssl.conf ]; then
-    a2ensite 000-no-ssl
+ln -s $base_dir/${sub_dir}_apache2.conf $apache2_sites_available_dir/999-no-ssl.conf
+if [ ! -f $apache2_sites_enabled_dir/999-no-ssl.conf ]; then
+    a2ensite 999-no-ssl
 fi
-file $apache2_sites_enabled_dir/000-no-ssl.conf
+file $apache2_sites_enabled_dir/999-no-ssl.conf
 if [ -f $apache2_sites_enabled_dir/000-default.conf ]; then
     a2dissite 000-default
 fi
