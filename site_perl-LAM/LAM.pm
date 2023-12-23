@@ -47,7 +47,7 @@ if ($path =~ /($docRoot)(.*)/) {$path = $2} # Strip document root from path
 my $publicScripts = '/Public/Scripts';
 if ($path =~ /($publicScripts)(.*)/) {$path = $2} # Strip public from path
 my $pageHeader = "\n$path/\n" . # Include link to program source
-    a({-href=>"$ENV{SCRIPT_NAME}?Source"}, "\n$scriptName\n");
+    a({-href=>"$ENV{SCRIPT_NAME}?source"}, "\n$scriptName\n");
 my $errorPrefix = ''; my $bannerColor = 'lime';
 if ($optError ne 1) {
     $html_title .= ' Error';
