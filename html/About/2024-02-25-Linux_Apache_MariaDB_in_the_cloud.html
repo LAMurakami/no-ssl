@@ -1,0 +1,603 @@
+<html><head>
+
+<title>Linux Apache MariaDB in the cloud</title>
+
+<link rel="Shortcut Icon" href="/Images/My/LAM.ico" />
+<link rel="stylesheet" type="text/css" href="/Public/Style.css" />
+
+</head><body>
+
+<h1 >&nbsp;
+
+Linux Apache MariaDB in the cloud
+
+</h1>
+<br class="clearit">
+<span style="float: right;"><a href="#toc">Contents</a></span>
+<!-- start content -->
+<div id="mw-content-text" lang="en" dir="ltr"><div>
+
+<h2><span id="About_LAM_AWS">About LAM AWS</span></h2>
+<p>This Linux Apache MariaDB (LAM) instance is in the cloud on Amazon Web Services (AWS) servers.  I currently run my main instance in the Oregon (US West 2 region) which is one of the cheapest regions for AWS pricing.  The inclusion of support for the Perl, Python and PHP application programming languages makes this a <a rel="nofollow" href="https://en.wikipedia.org/wiki/LAMP_(software_bundle)">LAMP</a> model web service software stack instance.
+</p><p>The LAM AWS server instance was created to host my public named host websites and be a backup of the mediawiki installation and home grown perl database web interface on the secure side of my main server.  These utilize a MariaDB server on the same machine.  The server is also used as an ssh proxy for browsing the web.
+</p><p>This server instance is now running on a t3.nano instance under a no upfront cost 36 month reservation.  The rate is less than $1.50 / month.  This is a considerable savings over the On Demand $0.0052 per Linux t3.nano Instance Hour = $3.796 / Month ($0.0052*24*365/12) - $45.552 / Year pricing.  The t3.nano instance 36 month reservation covers 1 EC2 instance but does not include any EC2 EBS storage which is required for the Ubuntu Server image used for the Operating System.  I pay $0.80 for 8 GB-Mo of General Purpose SSD (gp2) which is the standard configuration for the Latest Ubuntu Server image.  I pay $0.30 for 1 GB-Mo of storage on the us-west-2 Oregon AWS Elastic File System (EFS) at the USD $0.30 per GB-Mo for Standard storage (USW2) rate.  The AWS EFS storage is among the most expensive but it is extremely convenient to have a persistent parallel file system that can be mounted with the Linux nfs4 package available during the Instance Initialization.  I pay $4.00 / month for an additional 42 GB-Mo of General Purpose SSD (gp2) for the volume to mirror the /Zz directory.  I have an AWS EFS in all 29 regions I can currently access but the storage is negligible (less than 40K) on every EFS except my main on in the us-west-2 Oregon region.
+</p>
+<h3><span id="aws.lam1.us_sites.lam1.us"><a rel="nofollow" href="http://aws.lam1.us">aws.lam1.us</a> <a rel="nofollow" href="http://sites.lam1.us">sites.lam1.us</a></span></h3>
+<p>The LAM AWS server instance was designed to utilize a t2.micro EC2 instance which is part of the AWS Free Tier offering.  That offering includes 750 Hours / month of a t2.micro Elastic Compute Cloud (EC2) instance which is enough to run one instance 24/7.  The instance could scale up by using a larger and more capable server and other options or scale down to a t3.nano or other server sizes cheaper than a t2.micro except under the (AWS) Free Tier offering.  Multiple groups of virtual hosts can all run on one server or a separate server can be used for each group or single host.  Once the Free Tier was over the t2.micro server was found to cost less than $12.00 / month with the initial sizing and usage On Demand and less than $4.00 / month using a t3.nano EC2 instance reserved prepaid for 3 years.  A t3.nano is even less expensive and passed testing supporting the web and proxy services by being my cloud host after t2.micro hours got more expensive.  The server is mostly idle although memory usage runs at 75% on a t3.nano and nearly 50% on a t2.micro.
+</p><p>A single LAM AWS server instance can host multiple websites, including a secure website, with Apache2 on Linux and includes MariaDB, Perl, Python, PHP and other common development tools.  Additional packages installed support running MediaWiki and more.  The LAM AWS server is built on the latest Ubuntu Server Amazon Machine Image (AMI) with an EBS General Purpose (SSD) Volume.  The resulting image is similar enough to the Linux Mint distribution I use on the newer machines at home and on my laptop so that cloning my MediaWiki and lam databases from the main server to either an aws instance or Linux Mint machine can be done with the same procedure.
+</p>
+<h2><span id="LAM_AWS_resources">LAM AWS resources</span></h2>
+<h3><span id="Public_IPv4_Address">Public IPv4 Address</span></h3>
+<p>AWS started charging for a Public IPv4 Address in February of 2024.  This doubled the cost of running one of it's smallest EC2 instances.
+</p>
+<ul><li>Charges for In-use public IPv4 address <a rel="nofollow" href="https://aws.amazon.com/vpc/pricing">took effect on February 1, 2024</a>.</li>
+<li>Hourly charge for In-use Public IPv4 Address $0.005 / hour = $0.12 / Day ~= $3.60 / Month ~= $43.80 / Year</li></ul>
+<pre>PublicIPv4='--no-associate-public-ip-address' # No Public IPv4 address
+PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+</pre>
+<p>In 2023, when I found out AWS would begin charging for each public IPv4 address, I enabled a default IPv6 address from the 2600:1f14:3d86:2c00::/56 CIDR block for EC2 instance launched in my us-west-2 AWS LAM VPC and modified the aws-web-anywhere-alt-ssh-port Security Group to allow for IPv6 traffic.  Because the ISP I use in Alaska does not yet support IPv6 and I don't know that any are available I must continue to use a Public IPv4 address for my main LAM AWS VPC EC3 instance.  I detailed all 29 of the Amazon provided /56 IPv6 CIDR blocks for my VPC in each region in the <a href="/a/Modify_AWS_VPC_for_IPv6" title="Modify AWS VPC for IPv6">Modify AWS VPC for IPv6</a> page I created.
+</p><p>I found that the public IPv4 addresses AWS optionally provides for an EC2 instance are implemented as NAT (Network Address Translation) at the gateway.
+</p>
+<h3><span id="Use_a_predefined_security_group">Use a predefined security group</span></h3>
+<p>The security group definition controls the traffic within the Virtual Private Cloud and with the outside world.  I use the same security group definition for all EC2 images with only a limited number of inbound ports open.  The definition details are:
+</p>
+<ul><li>GroupName - aws-web-anywhere</li>
+<li>Inbound Port 2049 TCP Rule - NFS for EFS - 172.31.0.0/16</li>
+<li>Inbound Port 22 TCP Rule - SSH from VPC - 172.31.0.0/16 &amp; 2600:1f14:3d86:2c00::/56 &amp; more LAM VPC IPv6 CIDR blocks</li>
+<li>Inbound Port 25 TCP Rule - SMTP - 0.0.0.0/0 &amp;&#160;::/0</li>
+<li>Inbound Port 80 TCP Rule - HTTP - 0.0.0.0/0 &amp;&#160;::/0</li>
+<li>Inbound Port 443 TCP Rule - HTTPS or SSH on an Alternate port - 0.0.0.0/0 &amp;&#160;::/0</li>
+<li>Inbound Port 2222 Custom TCP Rule - SSH on an Alternate port - 0.0.0.0/0 &amp;&#160;::/0</li>
+<li>Inbound Port 55520 Custom TCP Rule - SSH on an Alternate port - 0.0.0.0/0 &amp;&#160;::/0</li>
+<li>Inbound Port 55593 Custom TCP Rule - IMAPS on an Alternate port - 0.0.0.0/0</li>
+<li>Outbound Port 2049 Custom TCP Rule - NFS for EFS - 172.31.0.0/16</li>
+<li>Outbound All/All 0.0.0.0/0 &amp;&#160;::/0</li></ul>
+<p>This security group definition allows web traffic on the standard ports from the public interface (0.0.0.0/0), Secure Shell on an alternate high numbered port and IMAPS on an alternate high numbered port.  The security group definition allows Secure Shell on the standard port and NFS traffic only on the private interface (172.31.0.0/16) or the IPv6 CIDR block for the VPC.  The SSH SOCKS5 Proxy instance uses the same security group definition but is accepting Secure Shell traffic on the port that is normally used for Secure Web (HTTPS) traffic.  The security group definition does allow outgoing traffic from the server over the public interface over either IPv4 or IPv6.
+</p><p>The us-west-2 Oregon has an additional Inbound SSH rule for each of the 29 IPv6 CIDR blocks AWS assigned my VPC for the region.  All 29 of these Inbound SSH rules should be in every region but I skipped adding 25 of the rules to the additional regions when originally configuring them in February of 2024.
+</p><p>A separate EFS security group with just the 172.31.0.0/16 NFS for EFS inbound rule is attached to the interfaces for each Availability Zone in the region when creating the EFS for that region.
+</p>
+<h3><span id="Use_the_default_VPC_for_the_AWS_Region">Use the default VPC for the AWS Region</span></h3>
+<p>The default VPC for the AWS Region includes a default subnet in each Availability Zone providing up to 4,096 addresses per subnet, a few of which are reserved for AWS use.   This gives the LAM AWS VPC it's own private address space (172.31.0.0/16) and each EC2 instance gets an IP address within this space.  The default VPC in each AWS Region also includes an attached internet gateway, a route in the main route table that sends all traffic to the internet gateway, and DNS settings that automatically assign public DNS hostnames to instances with public IP addresses and enable DNS resolution through the Amazon-provided DNS server.
+</p>
+<pre>KEYPAIR=lam-arsc
+</pre>
+<p>Prior to my expansion into other regions I had let AWS create an aws-nwo-lam1 key pair and I used that to access instances launched in us-west-2 Oregon.  Quickly I was adding the passphrase protected key pair I have been using on my laptops since working at <a rel="nofollow" href="http://arsc.lam1.us/About">ARSC</a> to every cloud-init file.  The AWS key pairs are managed in the EC2 area of the console and not the VPC area but they are only available in the region that they they are created or imported into.  I decided to import my main key into all the regions which eliminates the need to use the key pair I had ley Amazon create for me in 2017.
+</p>
+<pre>EFS=value-not-used
+</pre>
+<h4><span id="The_LAMP_security_group_ID_is_unique_for_each_region">The LAMP security group ID is unique for each region</span></h4>
+<pre>REGION=us-west-2 #  us-west-2 Oregon <span style="background-color: lime">my main region</span> <span style="background-color: pink">failed test 01</span> <span style="background-color: lime">passed test 02</span>
+SECURITY_GROUP=sg-3bda0647 # aws-web-anywhere-alt-ssh-port us-west-2 Oregon
+</pre>
+<p>Prior to February 2024 when AWS started charging for a public IPv4 address over and above the hourly charge for running the instance I had only started instances in the us-west-2 Oregon region.  In February I created  the <a href="/a/Modify_AWS_VPC_for_IPv6" title="Modify AWS VPC for IPv6">Modify AWS VPC for IPv6</a> page and modified the AWS VPC defaults for a number of regions and activated all the regions that were not previously activated.  One of the steps is to create a security group which is now a parameter of the <a href="/a/Amazon_Web_Services_(AWS)#Start_EC2_instance_from_Command_line_specifying_CloudInit,_PublicIPv4_and_more" title="Amazon Web Services (AWS)">aws ec2 run-instances</a> command I use to launch an instance.
+</p>
+<pre>REGION=us-east-1 # us-east-1 N. Virginia <span style="background-color: pink">failed test 01</span> <span style="background-color: lime">passed test 02</span> <span style="background-color: aqua">passed test 03</span>
+SECURITY_GROUP=sg-03320ad0fec07ba77 # aws-web-anywhere us-east-1
+</pre>
+<pre>REGION=ca-central-1 # ca-central-1 Canada <span style="background-color: pink">failed test 01</span> <span style="background-color: lime">passed test 02</span> <span style="background-color: aqua">passed test 03</span>
+SECURITY_GROUP=sg-0ef4fef22698bcd40 # aws-web-anywhere ca-central-1
+</pre>
+<pre>REGION=us-east-2 # us-east-2 Ohio <span style="background-color: pink">failed test 01</span> <span style="background-color: lime">passed test 02</span> <span style="background-color: aqua">passed test 03</span>
+SECURITY_GROUP=sg-0e742c1aadfffa653 # aws-web-anywhere us-east-2
+</pre>
+<pre>REGION=us-west-1 # us-west-1 N. California <span style="background-color: pink">failed test 01</span> <span style="background-color: lime">passed test 02</span> <span style="background-color: aqua">passed test 03</span>
+SECURITY_GROUP=sg-0b2cbef29ecc3ecd2 # aws-web-anywhere us-west-1
+</pre>
+<pre>REGION=eu-central-1 # eu-central-1 Frankfurt <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 03</span>
+SECURITY_GROUP=sg-043484886d8ef0bc2 # aws-web-anywhere eu-central-1
+</pre>
+<pre>REGION=eu-west-1 # eu-west-1 Ireland <span style="background-color: pink">failed test 01</span> <span style="background-color: lime">passed test 02</span> <span style="background-color: aqua">passed test 03</span>
+SECURITY_GROUP=sg-0b96ad2c4a0c62d9f # aws-web-anywhere eu-west-1
+</pre>
+<pre>REGION=eu-north-1 # Stockholm (sebnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04b</span>
+SECURITY_GROUP=sg-0b924f3ad0746fb5e # aws-web-anywhere
+</pre>
+<pre>REGION=eu-central-2 # eu-central-2 Zurich (sebnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04</span>
+SECURITY_GROUP=sg-0d7a0136e28817ffd # aws-web-anywhere
+</pre>
+<pre>REGION=eu-south-1 # eu-south-1 Milan (Italy) (sebnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04d</span>
+SECURITY_GROUP=sg-0a076e83dc883ad15 # aws-web-anywhere eu-south-1 Milan (Italy)
+</pre>
+<pre>REGION=af-south-1 # af-south-1 Cape Town (sebnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04</span>
+SECURITY_GROUP=sg-018c1aae18c0e566b # aws-web-anywhere
+</pre>
+<pre>REGION=eu-west-2 # eu-west-2 London (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04b</span>
+SECURITY_GROUP=sg-094710e95749e4318 # aws-web-anywhere
+</pre>
+<pre>REGION=eu-west-3 # eu-west-3 Paris (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04b</span>
+SECURITY_GROUP=sg-06b1313e990e886e7 # aws-web-anywhere
+</pre>
+<pre>REGION=sa-east-1 # sa-east-1 Sao Paulo (South America) (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 03</span>
+SECURITY_GROUP=sg-0be16e2ef0697e8a7 # aws-web-anywhere
+</pre>
+<pre>REGION=ap-northeast-1 # ap-northeast-1 Tokyo (subnets a, c, d) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04e</span>
+SECURITY_GROUP=sg-08a18afbbbf99c26e # aws-web-anywhere
+</pre>
+<pre>REGION=ap-southeast-1 # ap-southeast-1 Singapore (subnets a, c, d) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04b</span>
+SECURITY_GROUP=sg-01752ca41332e7564 # aws-web-anywhere
+</pre>
+<pre>REGION=ap-southeast-2 # ap-southeast-2 Sydney (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04</span>
+SECURITY_GROUP=sg-0e1819221520221dd # aws-web-anywhere
+</pre>
+<pre>REGION=ap-northeast-2 # ap-northeast-2 Seoul (subnets a, b, c, d) most are only 3 <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04f</span>
+SECURITY_GROUP=sg-0b773851f304ba99a # aws-web-anywhere
+</pre>
+<pre>REGION=ap-northeast-3 # ap-northeast-3 Osaka (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04c</span>
+SECURITY_GROUP=sg-0e35405e1e8ef33bb # aws-web-anywhere
+</pre>
+<pre>REGION=ap-south-1 # ap-south-1 Mumbai (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04</span>
+SECURITY_GROUP=sg-02c9967bd1c51cd28 # aws-web-anywhere
+</pre>
+<pre>REGION=ca-west-1 # ca-west-1 Calgary (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04c</span>
+SECURITY_GROUP=sg-0c6c9b55fc89bd275 # aws-web-anywhere
+</pre>
+<p>The t3a.nano INSTANCE_TYPE is not available in ca-west-1 Calgary and the t3.nano INSTANCE_TYPE is the smallest available for the x86_64 architecture. 
+</p>
+<pre>REGION=ap-southeast-4 # ap-southeast-4 Melbourne (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 01</span>
+SECURITY_GROUP=sg-09f94b9a07c0f44c7 # aws-web-anywhere
+</pre>
+<pre>REGION=me-south-1 # me-south-1 Bahrain (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04f</span>
+SECURITY_GROUP=sg-026a4253f70941de7 # aws-web-anywhere
+</pre>
+<p>The t3a.nano INSTANCE_TYPE is not available in me-south-1 Bahrain and the t3.nano INSTANCE_TYPE is the smallest available for the x86_64 architecture.
+</p>
+<pre>REGION=me-central-1 # me-central-1 United Arab Emirates (UAE) (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04</span>
+SECURITY_GROUP=sg-07791babc4c684823 # aws-web-anywhere
+</pre>
+<pre>REGION=il-central-1 # il-central-1 Tel Aviv (Israel) (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04d</span>
+SECURITY_GROUP=sg-03aa12578389c5a88 # aws-web-anywhere
+</pre>
+<pre>REGION=ap-south-2 # ap-south-2 Hyderabad (India) (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 03</span>
+SECURITY_GROUP=sg-0a5e33cec7b147f07 # aws-web-anywhere
+</pre>
+<pre>REGION=ap-southeast-3 # ap-southeast-3 Jakarta {Indonesia) (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04f</span>
+SECURITY_GROUP=sg-06ef74b2b06ac0f64 # aws-web-anywhere
+</pre>
+<p>The t3a.nano INSTANCE_TYPE is not available in ap-southeast-3 Jakarta {Indonesia) and the t3.nano INSTANCE_TYPE is the smallest available for the x86_64 architecture.
+</p>
+<pre>REGION=eu-south-2 # eu-south-2 Spain (subnets a, b, c) <span style="background-color: lime">passed test 01</span> <span style="background-color: aqua">passed test 04</span>
+SECURITY_GROUP=sg-074d970a9038a9cac # aws-web-anywhere
+</pre>
+<pre>REGION=ap-east-1 # ap-east-1 Hong Kong (subnets a, b, c) <span style="background-color: aqua">passed test 01</span>
+SECURITY_GROUP=sg-0b668965bee1e8119 # aws-web-anywhere
+</pre>
+<pre>KEYNAME=lam1-Ubuntu-ARM-No-Public-IPv4-${REGION}
+</pre>
+<p>In February of 2024 I requested a /56 IPv6 CIDR block for my LAM AWS VCP in all of the 28 regions currently available to me.  I enabled 12 regions that were not enabled for my account to get to 28 regions available to me.  I was pleased that by default AWS assigned over 4.2 <a rel="nofollow" href="https://en.wikipedia.org/wiki/Names_of_large_numbers">Sextillion</a> IPv6 addresses for each of the 28 regions where I asked for an IPv6 CIDR block from the AWS pool.  So far I have only tested the <a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam1-Ubuntu-CloudInit-ARM-No-Public-IPv4.txt">aws-nwo-lam1-Ubuntu-CloudInit-ARM-No-Public-IPv4.txt</a> cloud-init file in regions other than us-west-2 Oregon which has been my only region for the over six years I have been using AWS so far.
+</p>
+<h3><span id="Use_a_persistent_parallel_file_system">Use a persistent parallel file system</span></h3>
+<p>The <a rel="nofollow" href="https://lamurakami.github.io/aws-efs/">(AWS) Elastic File System (EFS)</a> directory with a file for each region specifying the EFS name was created on my GitHub pages website to allow me to mount the LAM aws-efs for the region the instance was launched in.
+</p><p>The EFS directory is used by the CloudInit directives during initialization of my AWS EC2 instances.  The nfs-common additional package is required to mount the persistent Amazon Web Services Elastic File System.  Once the nfs-common package is installed the nfs4 mount can be implemented.  Since an additional package is required the mount is performed within the runcmd section and cannot be run earlier in the bootcmd section.
+</p><p>NFSv4 uses only one IP port, 2049, to run the service which simplifies controlling access.
+</p><p>In 2023 while investigating the internet via IPv4, IPv6 or a dual stack after learning AWS will start charging $43.80 per year for each public IPv4 address in use I found no way to have the EFS resource provisioned with IPv6 addresses.  By default AWS creates a private IPv4 subnet for each availability zone within a region and automatically provisions resource names resolved by DNS to private IPv4 addresses within the subnets.  This is all within the VPC (Virtual Private Cloud) created by default for you within a region where you deploy resources.  I was able to modify my VPC for IPv6 but had to run dual stack EC2 instances to access the EFS.  I learned that the public IPv4 addresses AWS can optionally provide for an EC2 instance are implemented as NAT (Network Address Translation) at the gateway.
+</p>
+<h3><span id="Use_a_persistent_48G_General_Purpose_SSD_EBS_volume">Use a persistent 48G General Purpose SSD EBS volume</span></h3>
+<p>A second EBS volume was created to hold a copy of my /Zz by Date data in 2020.  This copy is synced daily with the main copy on my AK LAN main server as long as ak20 is available via ssh.  I started a t3.large EC2 instance with 8GiB memory to handle the initial population from the most recent Zz*tgz backup.  The t3.nano I normally run could not handle the initial population task but has no problem with the daily rsync jobs.  The volume is currently 87% utilized and I have already grown it from an original 44G size.  The 48G of EBS costs an additional $4.80 a month and is available to only one EC2 instance.
+</p><p>A snapshot of this volume is created daily and retained for 15 days.
+</p>
+<h2><span id="LAM_AWS_command_line_options">LAM AWS command line options</span></h2>
+<dl><dt>Launch a single ec2 instance specifying instance type and size</dt>
+<dd>aws ec2 run-instances --count 1 --instance-type <a href="#Amazon_Instance_Type_by_Architecture_and_size">${INSTANCE_TYPE}</a></dd>
+<dt>Get a public IP address or not</dt>
+<dd>${PublicIPv4}</dd>
+<dt>Launch using my key</dt>
+<dd>--key-name aws-nwo-lam1</dd>
+<dt>Use a predefined security group</dt>
+<dd>--security-group-ids sg-3bda0647</dd>
+<dt>The initial Operating System / Architecture specific Amazon Machine Image to use</dt>
+<dd>--image-id ${AMI}</dd>
+<dt>Specify an instance Name tag</dt>
+<dd>--tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=${KEYNAME}}]"</dd>
+<dd>The Name Tag Value appears in the AWS EC2 Instances page along with Instance type, ID and state.</dd>
+<dt>Specify the file with the user data</dt>
+<dd>--user-data file://${CLOUD_INIT}</dd></dl>
+<p>A number of the command line options are specified by variables mostly dependent on the Operating System / Architecture / PublicIPv4 options and the values are detailed in the following sections.
+</p>
+<h2><span id="LAM_AWS_EC2_instance_initialization_by_Operating_System_.2F_Architecture_.2F_PublicIPv4"></span><span id="LAM_AWS_EC2_instance_initialization_by_Operating_System_/_Architecture_/_PublicIPv4">LAM AWS EC2 instance initialization by Operating System / Architecture / PublicIPv4</span></h2>
+<p>I initially created CloudInit directives only for Ubuntu Server and only the x86-64 architecture.  This was originally on x86-64 Ubuntu Server 16.04 LTS, then x86-64 Ubuntu 18.04 LTS, then x86-64 Ubuntu Server 20.04 LTS and x86-64 Ubuntu Server 22.04 LTS.
+</p><p>The first variant was the CloudInit directives to have ssh on port 443 instead of https allowing me to setup a SSH SOCKS5 Proxy server on port 443 in some environments such as on hotel / resort Wi-Fi.  This variant does not support the secure site where Mediawiki and other MariaDB web applications live.
+</p><p>In 2022 After upgrading to x86-64 Ubuntu Server 22.04 LTS I created an x86-64 Amazon Linux 2 initialization.
+</p><p>In 2023 I created an x86-64 Amazon Linux 2023 initialization after it became available in March.  I followed in 2023 with ARM Amazon Linux 2023, and ARM Ubuntu Server 22.04 LTS initialization scripts.  I then added Debian 12 scripts for both x86-64 and ARM architectures.
+</p><p>In 2023 I added the PublicIPv4 option.
+</p>
+<h3><span id="Amazon_Machine_Image_by_Operating_System_.2F_Architecture"></span><span id="Amazon_Machine_Image_by_Operating_System_/_Architecture">Amazon Machine Image by Operating System / Architecture</span></h3>
+<p>Amazon Machine Image (AMI)s are available for a number of Operating System / Architecture configurations.  A number of AMIs are supported and maintained by AWS, some provided by the AWS community and custom AMIs can be made.  I could create a custom AMI but instead use a AWS provided AMI provided without additional charge and perform the initialization with the CloudInit directives.  The initialization takes a few minutes but I avoid having to pay for the storage of the AMI as an EBS snapshot.
+</p><p>Each AMI is for a Region, Operating system, Architecture, and Storage for the root device.  I use Oregon (US West 2) Region images with an Elastic Block Store (EBS) root device.  I have CloudInit directives for Ubuntu server 22.04, Debian 12, Amazon Linux 2, and Amazon Linux 2023 for both x86 and ARM Architectures.
+</p><p>In February of 2024 I started launching instances in other regions of AWS besides the us-west-2 Oregon region where I have been operating since 2017.  Before launching an instance in a new region I <a href="/a/Modify_AWS_VPC_for_IPv6" title="Modify AWS VPC for IPv6">Modify AWS VPC for IPv6</a> since my initial testing is about running an instance with a Public IPv6 address but without a Public IPv4 that AWS is now charging a ludicrous amount for starting this month.  I was testing arm64 Ubuntu 22.04 LTS which has an issue with package management on instances without a Public IPv4 address and decided to see if it affected other images since there is a separate image for each region.
+</p><p>For Ubuntu I use the <a rel="nofollow" href="https://cloud-images.ubuntu.com/locator/ec2">Ubuntu image locator for ec2</a> and search for arm64 and the region to find the latest build for my testing.  The rest of this section has cloud-init files for the us-west-2 Oregon region and are generally updated when new images appear in the Launch instances Quick Start section for selecting the AMI.
+</p>
+<h3><span id="LAM_AWS_user-data_is_a_set_of_CloudInit_directives">LAM AWS user-data is a set of CloudInit directives</span></h3>
+<p>The LAM AWS server is initialized with CloudInit directives to install the necessary packages, configuration and content on top of a generic Server image.  All the directives in a file can be specified with the user-data parameter or in Advanced Options of the launch page from the AWS web console.  The directives can also be pasted into the text box when using the web console.  The CloudInit package is a great tool for AWS EC2 initialization.
+</p>
+<h4><span id="Instance_to_take_over_lam1">Instance to take over lam1</span></h4>
+<p>The main initialization directives update the Ubuntu server to support all the virtual hosts of the LAM AWS cloud and automatically assume the lam1 domain subset of hosts.  Additional <a href="/a/Dynamic_Domain_Name_Service#Check-in_from_a_Linux_host" title="Dynamic Domain Name Service">Dynamic Domain Name Service#Check-in from a Linux host</a> operations can be performed to take over more or all of the lam1 domain subsets.
+</p>
+<pre>PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+</pre>
+<pre>CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam1-Ubuntu-CloudInit.txt">aws-nwo-lam1-Ubuntu-CloudInit.txt</a>
+KEYNAME=lam1-Ubuntu-x86-${REGION}
+AMI=ami-008fe2fc65df48dac # Canonical, Ubuntu, 22.04 LTS, amd64 jammy image build on 2023-12-07
+</pre>
+<pre>CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam1-Ubuntu-CloudInit-ARM.txt">aws-nwo-lam1-Ubuntu-CloudInit-ARM.txt</a>
+KEYNAME=lam1-Ubuntu-ARM-${REGION}
+AMI=ami-0a24e6e101933d294 # Canonical, Ubuntu, 22.04 LTS, arm64 jammy image build on 2023-12-07
+</pre>
+<h5><span id="Instance_designed_to_initiate_without_public_IPv4_access">Instance designed to initiate without public IPv4 access</span></h5>
+<pre>PublicIPv4='--no-associate-public-ip-address' # No Public IPv4 address
+</pre>
+<pre>CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam1-Ubuntu-No-Public-IPv4-CloudInit.txt">aws-nwo-lam1-Ubuntu-No-Public-IPv4-CloudInit.txt</a>
+KEYNAME=lam1-Ubuntu-x86-No-Public-IPv4-${REGION}
+AMI=ami-008fe2fc65df48dac # Canonical, Ubuntu, 22.04 LTS, amd64 jammy image build on 2023-12-07
+</pre>
+<pre>CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam1-Ubuntu-CloudInit-ARM-No-Public-IPv4.txt">aws-nwo-lam1-Ubuntu-CloudInit-ARM-No-Public-IPv4.txt</a>
+KEYNAME=lam1-Ubuntu-ARM-No-Public-IPv4-${REGION}
+AMI=ami-0a24e6e101933d294 # Canonical, Ubuntu, 22.04 LTS, arm64 jammy image build on 2023-12-07
+</pre>
+<h5><span id="cloud-init_for_without_public_IPv4_access_instance_with_broken_AWS_Ubuntu_22.04_ARM_AMI">cloud-init for without public IPv4 access instance with broken AWS Ubuntu 22.04 ARM AMI</span></h5>
+<p>As of Monday, February 19, 2024 the us-west-2 Oregon AWS Ubuntu 22.04 ARM AMI is broken along with the images of five other regions.  This fix version modifies the sources.list file and delays package operations until in runcmd after the fix.  It also became the first script I modified to run in any region and be able to mount the EFS for that region.
+</p>
+<pre>KEYNAME=lam1-Ubuntu-ARM-No-Public-IPv4-euc-fix-${REGION}
+CLOUD_INIT=/var/www/aws/aws-nwo-lam1-Ubuntu-CloudInit-ARM-No-Public-IPv4-euc-fix.txt
+</pre>
+<h4><span id="lam2_Instance_to_be_a_SSH_SOCKS5_Proxy_server_on_port_443">lam2 Instance to be a SSH SOCKS5 Proxy server on port 443</span></h4>
+<p>Port 443 is normally used for HTTPS so is likely to be available even when other ports are blocked.  I run this instance only when I find my ssh access blocked when using someone else's WiFi such as from the laptop at a hotel or for testing.
+</p>
+<pre>PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Ubuntu-CloudInit.txt">aws-nwo-lam2-Ubuntu-CloudInit.txt</a>
+KEYNAME=lam2-Ubuntu-x86-${REGION}
+AMI=ami-008fe2fc65df48dac # Canonical, Ubuntu, 22.04 LTS, amd64 jammy image build on 2023-12-07
+</pre>
+<pre>PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Ubuntu-ARM-CloudInit.txt">aws-nwo-lam2-Ubuntu-ARM-CloudInit.txt</a>
+KEYNAME=lam2-Ubuntu-ARM-${REGION}
+AMI=ami-0a24e6e101933d294 # Canonical, Ubuntu, 22.04 LTS, arm64 jammy image build on 2023-12-07
+</pre>
+<h5><span id="This_instance_doesn.27t_check_in_to_a_Dynamic_Domain_Name_Service"></span><span id="This_instance_doesn't_check_in_to_a_Dynamic_Domain_Name_Service">This instance doesn't check in to a Dynamic Domain Name Service</span></h5>
+<pre>PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-lam2-Amazon-Linux-2-CloudInit.txt">aws-lam2-Amazon-Linux-2-CloudInit.txt</a>
+KEYNAME=lam2-AL2-x86-port-443-${REGION}
+AMI=ami-0de43e61758b7158c # Amazon Linux 2 Kernel 5.10 AMI 2.0.20231218.0 x86_64 HVM gp2
+</pre>
+<p>Like in <a rel="nofollow" href="https://ak20.lam1.us/blog/2020/08/04/Cloud-init-script-that-anyone-could-launch-on-AWS.html#What_is_missing">What is missing</a>, this instance doesn't check in to a Dynamic Domain Name Service.
+</p><p>From another instance in the same VPC I can use Secure Copy to get the private ec2-user resource archive to the new instance over the local area network with: 
+</p>
+<pre>scp -p /mnt/efs/aws-lam1-ubuntu/ec2-user.t* ec2-user@&lt;local-ipv4&gt;:/tmp
+</pre>
+<p>On the new instance I can install these resources with:
+</p>
+<pre>tar -xzf /tmp/ec2-user.tgz --directory ${HOME}
+</pre>
+<h4><span id="lam2_Instance_running_Amazon_Linux_2_rather_than_Ubuntu_Server">lam2 Instance running Amazon Linux 2 rather than Ubuntu Server</span></h4>
+<p>This instance runs on Amazon Linux 2 rather than Ubuntu Server.  There are a number of package differences and differences in Apache2 configuration.  With the addition of EPEL and amazon-linux-extras repositories it supports being a LAM Alaska clone including the MediaWiki and other functions served by https.
+</p>
+<pre>PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Amazon-Linux-2-CloudInit.txt">aws-nwo-lam2-Amazon-Linux-2-CloudInit.txt</a>
+KEYNAME=lam2-Amazon-Linux-2-x86-${REGION}
+AMI=ami-0d442a425e2e0a743 # Amazon Linux 2 Kernel 5.10 AMI 2.0.20240131.0 x86_64 HVM gp2
+</pre>
+<pre>PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Amazon-Linux-2-ARM-CloudInit.txt">aws-nwo-lam2-Amazon-Linux-2-ARM-CloudInit.txt</a>
+KEYNAME=lam2-Amazon-Linux-2-ARM-${REGION}
+AMI=ami-0479efe086dccceee # Amazon Linux 2 LTS Arm64 Kernel 5.10 AMI 2.0.20240131.0 arm64 HVM gp2
+</pre>
+<h5><span id="Instance_designed_to_initiate_without_public_IPv4_access_2">Instance designed to initiate without public IPv4 access</span></h5>
+<pre>PublicIPv4='--no-associate-public-ip-address' # No Public IPv4 address
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Amazon-Linux-2-No-Public-IPv4-CloudInit.txt">aws-nwo-lam2-Amazon-Linux-2-No-Public-IPv4-CloudInit.txt</a>
+KEYNAME=lam2-Amazon-Linux-2-x86-No-Public-IPv4-${REGION}
+AMI=ami-0d442a425e2e0a743 # Amazon Linux 2 Kernel 5.10 AMI 2.0.20240131.0 x86_64 HVM gp2
+</pre>
+<pre>PublicIPv4='--no-associate-public-ip-address' # No Public IPv4 address
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Amazon-Linux-2-ARM-No-Public-IPv4-CloudInit.txt">aws-nwo-lam2-Amazon-Linux-2-ARM-No-Public-IPv4-CloudInit.txt</a>
+KEYNAME=lam2-Amazon-Linux-2-ARM-No-Public-IPv4-${REGION}
+AMI=ami-0479efe086dccceee # Amazon Linux 2 LTS Arm64 Kernel 5.10 AMI 2.0.20240131.0 arm64 HVM gp2
+</pre>
+<h4><span id="lam2_Instance_running_Amazon_Linux_2023">lam2 Instance running Amazon Linux 2023</span></h4>
+<pre>PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Amazon-Linux-2023-CloudInit-no-packages.txt">aws-nwo-lam2-Amazon-Linux-2023-CloudInit-no-packages.txt</a>
+KEYNAME=lam2-AL2023-x86-${REGION}
+AMI=ami-01e82af4e524a0aa3 # Amazon Linux 2023 AMI 2023.3.20240205.2 x86_64 HVM kernel-6.1
+</pre>
+<pre>PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Amazon-Linux-2023-CloudInit-Arm.txt">aws-nwo-lam2-Amazon-Linux-2023-CloudInit-Arm.txt</a>
+KEYNAME=lam2-AL2023-ARM-${REGION}
+AMI=ami-01c3c55948a949a52 # Amazon Linux 2023 AMI 2023.3.20240205.2 arm64 HVM kernel-6.1
+</pre>
+<h5><span id="This_cloud-init_fails_if_the_instance_has_less_than_1.0_GiB_of_Memory.">This cloud-init fails if the instance has less than 1.0 GiB of Memory.</span></h5>
+<p>A t3a.micro x86 is big enough but twice as expensive as the t4g.nano ARM or t3a.nano x86 instance type which can run the no packages versions.
+</p>
+<pre>PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Amazon-Linux-2023-CloudInit.txt">aws-nwo-lam2-Amazon-Linux-2023-CloudInit.txt</a>
+KEYNAME=lam2-AL2023-x86-packages-${REGION}
+AMI=ami-01e82af4e524a0aa3 # Amazon Linux 2023 AMI 2023.3.20240205.2 x86_64 HVM kernel-6.1
+</pre>
+<pre>PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Amazon-Linux-2023-CloudInit-Arm.txt">aws-nwo-lam2-Amazon-Linux-2023-CloudInit-ARM.txt</a>
+KEYNAME=lam2-AL2023-ARM-${REGION}
+AMI=ami-01c3c55948a949a52 # Amazon Linux 2023 AMI 2023.3.20240205.2 arm64 HVM kernel-6.1
+</pre>
+<h5><span id="Instance_designed_to_initiate_without_public_IPv4_access_3">Instance designed to initiate without public IPv4 access</span></h5>
+<pre>PublicIPv4='--no-associate-public-ip-address' # No Public IPv4 address
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Amazon-Linux-2023-No-Public-IPv4-CloudInit-no-packages.txt">aws-nwo-lam2-Amazon-Linux-2023-No-Public-IPv4-CloudInit-no-packages.txt</a>
+KEYNAME=lam2-AL2023-x86-No-Public-IPv4-${REGION}
+AMI=ami-01e82af4e524a0aa3 # Amazon Linux 2023 AMI 2023.3.20240205.2 x86_64 HVM kernel-6.1
+</pre>
+<pre>PublicIPv4='--no-associate-public-ip-address' # No Public IPv4 address
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Amazon-Linux-2023-No-Public-IPv4-CloudInit-Arm.txt">aws-nwo-lam2-Amazon-Linux-2023-No-Public-IPv4-CloudInit-Arm.txt</a>
+KEYNAME=lam2-AL2023-Arm-No-Public-IPv4-${REGION}
+AMI=ami-01c3c55948a949a52 # Amazon Linux 2023 AMI 2023.3.20240205.2 arm64 HVM kernel-6.1
+</pre>
+<h5><span id="This_cloud-init_fails_if_the_instance_has_less_than_1.0_GiB_of_Memory._2">This cloud-init fails if the instance has less than 1.0 GiB of Memory.</span></h5>
+<pre>PublicIPv4='--no-associate-public-ip-address' # No Public IPv4 address
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Amazon-Linux-2023-No-Public-IPv4-CloudInit-ARM.txt">aws-nwo-lam2-Amazon-Linux-2023-No-Public-IPv4-CloudInit-ARM.txt</a>
+KEYNAME=lam2-AL2023-ARM-No-Public-IPv4-${REGION}
+AMI=ami-01e82af4e524a0aa3 # Amazon Linux 2023 AMI 2023.3.20240205.2 x86_64 HVM kernel-6.1
+</pre>
+<h4><span id="lam2_Instance_running_Debian_12">lam2 Instance running Debian 12</span></h4>
+<pre>PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Debian-x86-CloudInit.txt">aws-nwo-lam2-Debian-x86-CloudInit.txt</a>
+KEYNAME=lam2-Debian-x86-${REGION}
+AMI=ami-0c2644caf041bb6de # Debian 12 (20231013-1532) x86_64
+</pre>
+<pre>PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Year
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Debian-ARM-CloudInit.txt">aws-nwo-lam2-Debian-ARM-CloudInit.txt</a>
+KEYNAME=lam2-Debian-ARM-${REGION}
+AMI=ami-07564a05443c48891 # Debian 12 (20231013-1532) ARM
+</pre>
+<h5><span id="This_instance_is_designed_to_initiate_without_public_IPv4_access.">This instance is designed to initiate without public IPv4 access.</span></h5>
+<pre>PublicIPv4='--no-associate-public-ip-address' # No Public IPv4 address
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Debian-x86-No-Public-IPv4-CloudInit.txt">aws-nwo-lam2-Debian-x86-No-Public-IPv4-CloudInit.txt</a>
+KEYNAME=lam2-Debian-x86-No-Public-IPv4-${REGION}
+AMI=ami-0c2644caf041bb6de # Debian 12 (20231013-1532) x86_64
+</pre>
+<pre>PublicIPv4='--no-associate-public-ip-address' # No Public IPv4 address
+CLOUD_INIT=/var/www/aws/<a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam2-Debian-ARM-No-Public-IPv4-CloudInit.txt">aws-nwo-lam2-Debian-ARM-No-Public-IPv4-CloudInit.txt</a>
+KEYNAME=lam2-Debian-ARM-No-Public-IPv4-${REGION}
+AMI=ami-07564a05443c48891 # Debian 12 (20231013-1532) ARM
+</pre>
+<h3><span id="Amazon_Instance_Type_by_Architecture_and_size">Amazon Instance Type by Architecture and size</span></h3>
+<pre>INSTANCE_TYPE=<b>t4g.nano</b>; # ARM 0.5 GiB 2 vCPU $0.0042 / hour = $0.1008 / day ~= $3.024 / month
+INSTANCE_TYPE=<b>t3a.nano</b>; # x86 0.5 GiB 2 vCPU $0.0047 / hour = $0.1128 / day ~= $3.384 / month
+INSTANCE_TYPE=<b>t3.nano</b>; # x86 0.5 GiB 2 vCPU $0.0052 / hour = $0.1248 / day ~= $3.74 / month
+INSTANCE_TYPE=t2.nano; # x86 0.5 GiB 1 vCPU $0.0058 / hour = $0.1392 / day ~= $4.176 / month
+INSTANCE_TYPE=t4g.micro; # ARM 1 GiB 2 vCPU $0.0084 / hour = $0.2016 / day ~= $6.048 / month
+INSTANCE_TYPE=t3a.micro; # x86 1 GiB 2 vCPU $0.0094 / hour = $0.2256 / day ~= $6.768 / month
+INSTANCE_TYPE=t3.micro; # x86 1 GiB 2 vCPU $0.0104 / hour = $0.2496 / day ~= $7.488 / month
+INSTANCE_TYPE=<b>t2.micro</b>; # x86 1 GiB 1 vCPU $0.0116 / hour = $0.2784 / day ~= $8.352 / month
+INSTANCE_TYPE=<b>t4g.small</b>; # ARM 2 GiB 2 vCPU $0.0168 / hour = $0.4032 / day ~= $12.096 / month
+INSTANCE_TYPE=t3a.small; # x86 2 GiB 2 vCPU $0.0188 / hour = $0.4512 / day ~= $13.536 / month
+INSTANCE_TYPE=t3.small; # x86 2 GiB 2 vCPU $0.0208 / hour = $0.4992 / day ~= $14.976 / month
+INSTANCE_TYPE=t4g.medium; # ARM 4 GiB 2 vCPU $0.0336 / hour = $0.8064 / day ~= $24.192 / month
+INSTANCE_TYPE=t3a.medium; # x86 4 GiB 2 vCPU $0.0376 / hour = $0.9024 / day ~= $27.072 / month
+INSTANCE_TYPE=t3.medium; # x86 4 GiB 2 vCPU $0.0416 / hour = $0.9984 / day ~= $29.952 / month
+INSTANCE_TYPE=t4g.large; # ARM 8 GiB 2 vCPU $0.0672 / hour = $1.6128 / day ~= $48.384 / month
+INSTANCE_TYPE=t3a.large; # x86 8 GiB 2 vCPU $0.0752 / hour = $1.8048 / day ~= $54.144 / month
+INSTANCE_TYPE=t3.large; # x86 8 GiB 2 vCPU $0.0832 / hour = $1.9968 / day ~= $59.904 / month
+</pre>
+<p>Each specific Initial AMI will only launch with a matching instance type Architecture.
+</p>
+<h3><span id="Launch_a_LAM_AWS_EC2_instance_from_the_command_line">Launch a LAM AWS EC2 instance from the command line</span></h3>
+<p>The awscli package includes the aws command which includes the ability to launch a new instance.
+</p>
+<pre>aws ec2 run-instances --count 1 --image-id ${AMI}  --region ${REGION} \
+--instance-type ${INSTANCE_TYPE} --security-group-ids ${SECURITY_GROUP} \
+--tag-specifications "ResourceType=instance,Tags=[\
+{Key=Name,Value=${KEYNAME}},\
+{Key=EFS,Value=fs-6f45fac6.efs.us-west-2.amazonaws.com}]" \
+${PublicIPv4} --key-name ${KEYPAIR} --user-data \
+file://${CLOUD_INIT}
+</pre>
+<p><a href="/a/Amazon_Web_Services_(AWS)" title="Amazon Web Services (AWS)">Amazon Web Services (AWS)</a>
+</p>
+<h3><span id="The_LAM_AWS_EC2_instance_initializations_perform_the_following:">The LAM AWS EC2 instance initializations perform the following:</span></h3>
+<ul><li>Update aws.lam1.us site using public-ipv4 and more values from AWS EC2 metadata for this instance and public IPv6 address assigned to instance.</li>
+<li>Direct logging of all the CloudInit does to the /var/log/cloud-init-output.log file on the instance.</li>
+<li>Install over 500 MB of additional packages supporting the AWS shell and web server</li>
+<li>Configuration of apache2 for ssl and LAM AWS content including cgi-pl scripts</li>
+<li>Update of the duckdns.org Dynamic Domain Name IP address <b>for instances with public IPv4 address only</b></li>
+<li>Configuration of ssh to use an alternate ssh port and to display a banner</li>
+<li>Installation of <b>Log/In, lam database, lam user, MySQL.cgi-pl, Mediawiki, wikidb and more</b>.</li>
+<li>Installation of sites, arsc, cabo, z, oldinteriordems, interiordems and more apache2 sites</li>
+<li>Installation of <b>mailutils, roundcube and dovecot-imapd so qMail works</b></li>
+<li>Set US Alaska local time for the system</li>
+<li>Installation of x11-apps and <b>leafpad</b> some lightweight GUI applications using X11</li>
+<li>Install ${USER} bash resources</li>
+<li>List All Installed Packages information</li></ul>
+<p>This results in an instance using one of the <a rel="nofollow" href="http://lam1.duckdns.org">http://lam1.duckdns.org</a> or <a rel="nofollow" href="http://lam2.duckdns.org">http://lam2.duckdns.org</a> subdomains that is a LAM Alaska clone based on the latest daily backups.
+</p>
+<h2><span id="LAM_AWS_Updates_and_Backups">LAM AWS Updates and Backups</span></h2>
+<h3><span id="Latest_daily_backup_to_persistent_storage_is_used_for_initialization">Latest daily backup to persistent storage is used for initialization</span></h3>
+<p>The LAM AWS server instance hosting my public named host websites and a backup of the secure side of my main server is designed to use a set of CloudInit directives and a small amount of data on top of the latest Amazon Machine Image (AMI) on the default launch image page.  The initialization takes a few minutes but this means I don't have to pay for the storage of a custom AMI.
+</p><p>Daily backups to the persistent parallel file system are used for a new instance initialization so that it is current except for changes made to the main server within the last 24 hours.
+</p>
+<h3><span id="New_instance_initialization_includes_a_full_upgrade_of_the_latest_Amazon_Machine_Image">New instance initialization includes a full upgrade of the latest Amazon Machine Image</span></h3>
+<p>New instance initialization includes a full upgrade so testing after the launch of a new image should show if any updates that have not been applied to the current main running instance cause problems.
+</p><p>The latest Amazon Machine Image is specified as a command line option for the "aws ec2 run-instances" command.  A new image on the default launch image page is tested when it appears and usually can be substituted without any other changes to the new instance initialization.  Some package changes required changes to the new instance initialization when I did the major upgrade to Ubuntu 18.04 from Ubuntu 16.04 but most simply shorten the full upgrade performed during the new instance initialization.
+</p>
+<h3><span id="CloudInit_directives_and_a_set_of_scripts_control_use_and_creation_of_daily_backups">CloudInit directives and a set of scripts control use and creation of daily backups</span></h3>
+<p>The CloudInit directives specified as user-data when launching a new instance are maintained in the files linked to above.
+</p><p>A set of scripts on the persistent parallel file system are included in daily backups on the main server to keep the backups up to date.  Any configuration file changes from package defaults must be included in the backups and or applied during the new instance initialization.
+</p>
+<h2><span id="Repos_for_LAM_AWS_Linux_Apache_MariaDB_in_the_cloud">Repos for <a rel="nofollow" href="http://aws.lam1.us">LAM AWS Linux Apache MariaDB in the cloud</a></span></h2>
+<p>I have published some of the repos of the server configuration and the content in the html folder and an apache2 configuration for the websites to <a rel="nofollow" href="https://github.com/LAMurakami">GitHub</a>.
+</p>
+<ul><li><a rel="nofollow" href="https://github.com/LAMurakami/aws#readme">aws#readme</a> Linux Apache MariaDB in the cloud</li>
+<li><a rel="nofollow" href="https://github.com/LAMurakami/no-ssl#readme">no-ssl#readme</a> Default unsecure site configuration</li>
+<li><a rel="nofollow" href="https://github.com/LAMurakami/arsc#readme">arsc#readme</a> Lawrence A. Murakami at ARSC</li>
+<li><a rel="nofollow" href="https://github.com/LAMurakami/ubuntu-etc#readme">ubuntu-etc#readme</a> Ubuntu Server 20.04 configuration changes for LAM AWS VPC EC2 instances</li>
+<li>An additional lam repo does not have a public remote because it has configuration files with encrypted passwords and other information that should not be published.  The lam repo contains configuration and content for the secure side of the web server.  This includes Mediawiki configuration and the MariaDB credentials to access the database.</li></ul>
+<h2><span id="Log">Log</span></h2>
+<ul><li>Published Page location: <a rel="nofollow" href="http://aws.lam1.us/About">http://aws.lam1.us/About</a> <a rel="nofollow" href="http://sites.lam1.us/About">http://sites.lam1.us/About</a></li>
+<li><a rel="nofollow" href="https://ak20.lam1.us/Zz/z24/z2402/2024-02-21/Daily-ak19.txt">Wednesday, February 21, 2024</a> I do more tests and fix more cloud-init files.
+<ul><li><span style="background-color: aqua">passed test 01</span>: - Ubuntu arm64 packages work without public IPv4 address, EFS mounts and full clone</li>
+<li><span style="background-color: aqua">passed test 04d</span>: Amazon Linux 2 x86 IPv6 aws-nwo-lam2-Amazon-Linux-2-No-Public-IPv4-CloudInit.txt</li>
+<li><span style="background-color: aqua">passed test 04e</span>: Amazon Linux 2 arm64 IPv6 aws-nwo-lam2-Amazon-Linux-2-ARM-No-Public-IPv4-CloudInit.txt</li>
+<li><span style="background-color: aqua">passed test 04f</span>: Amazon Linux 2023 x86 IPv6 aws-nwo-lam2-Amazon-Linux-2023-No-Public-IPv4-CloudInit-no-packages.txt</li></ul></li>
+<li>On <a rel="nofollow" href="https://ak20.lam1.us/Zz/z24/z2402/2024-02-19/Daily-ak19.txt">Monday, February 19, 2024</a> I updated another script for EFS mount in any region.
+<ul><li>Includes ssh to aws connectivity, install .tgz from aws s3 cp and direct efs or via aws clone.
+<ul><li><span style="background-color: aqua">passed test 04</span>: I can launch a full clone that initializes without a public IPv4 address (uses aws.lam1.us ssh connectivity) that uses the cloud-init packages section.</li>
+<li><span style="background-color: aqua">passed test 04b</span>: Debian 12 ARM IPv6 aws-nwo-lam2-Debian-ARM-No-Public-IPv4-CloudInit.txt</li>
+<li><span style="background-color: aqua">passed test 04c</span>: Amazon Linux 2023 ARM ARM IPv6 aws-nwo-lam2-Amazon-Linux-2023-No-Public-IPv4-CloudInit-Arm.txt</li></ul></li></ul></li>
+<li>On <a rel="nofollow" href="https://ak20.lam1.us/Zz/z24/z2402/2024-02-18/Daily-ak19.txt">Sunday, February 18, 2024</a> I was able to launch a full LAM AWS clone in regions other than Oregon.
+<ul><li>I added another test result for the regions to this document
+<ul><li><span style="background-color: aqua">passed test 03</span>: I can launch a full clone that initializes without a public IPv4 address (uses aws.lam1.us ssh connectivity)</li></ul></li></ul></li>
+<li>On Saturday, February 17, 2024 I completed the <a href="/a/Modify_AWS_VPC_for_IPv6" title="Modify AWS VPC for IPv6">Modify AWS VPC for IPv6</a> steps for all 28 regions
+<ul><li>I added REGION and SECURITY_GROUP for each to this document</li>
+<li>I added test results for the regions to this document
+<ul><li><span style="background-color: lime">passed test 01</span>: Ubuntu arm64 packages work without public IPv4 address</li>
+<li><span style="background-color: pink">failed test 01</span>: still shows that instance can get IPv6 address and launch without public IPv4 address in that region</li>
+<li><span style="background-color: lime">passed test 02</span>: Ubuntu arm64 packages work without public IPv4 address with <a rel="nofollow" href="https://github.com/LAMurakami/aws/blob/master/aws-nwo-lam1-Ubuntu-CloudInit-ARM-No-Public-IPv4-euc-fix.txt">sources.list fix</a></li></ul></li></ul></li>
+<li>On <a rel="nofollow" href="https://ak20.lam1.us/Zz/z24/z2402/2024-02-14/Daily-ak19.txt">Monday, February 14, 2024</a> I found four more regions where the <span style="background-color: lime">Ubuntu arm64 packages work without public IPv4 address</span> in European regions and South Africa.</li>
+<li>On <a rel="nofollow" href="https://ak20.lam1.us/Zz/z24/z2402/2024-02-06/Daily-ak19.txt">Tuesday, February 6, 2024</a> the Ubuntu ARM ami still does not work without a public IPv4 address.
+<ul><li>I now incur charges for a public IPv4 address so it is not longer the default when testing an instance.</li>
+<li>There has been no improvement on my ability to not require a public IPv4 address for my main instance.</li></ul></li>
+<li>On <a rel="nofollow" href="https://ak20.lam1.us/Zz/z23/z2312/2023-12-20/Daily-ak19.txt">Wednesday, December 20, 2023</a> I can initialize Ubuntu, Debian, and Amazon Linux instances without public IPv4 address.
+<ul><li>The Ubuntu 2023-12-07 build amd64 image is using us-west-2.ec2.archive.ubuntu.com instead of us-west-2.ec2.ports.ubuntu.com in the sources list and succeeds without a public IPv4 address.</li>
+<li>The Ubuntu 2023-12-07 build arm64 image is still using us-west-2.ec2.ports.ubuntu.com in the sources list and fails without a public IPv4 address.</li></ul></li>
+<li>On <a rel="nofollow" href="https://ak20.lam1.us/Zz/z23/z2310/2023-10-30/Daily-ak19.txt">Monday, October 30, 2023</a> I found Amazon Linux 2023 on a nano instance has an issue with dnf upgrade
+<ul><li>This was the second dnf upgrade "dnf upgrade --releasever=2023.2.20231026" # (latest).</li>
+<li>The was resolved with starting with the newer AMI.</li></ul></li>
+<li>Friday, June 9, 2023 I tested the new AMIs for Amazon Linux 2023
+<ul><li>I made /usr/bin/vim.tiny the default editor instead of nano</li></ul></li>
+<li><a rel="nofollow" href="https://ak20.lam1.us/Zz/z23/z2306/2023-06-05/Daily-ak19.txt">Monday, June 5, 2023</a> I tested the new AMIs for Ubuntu 22.04, Amazon Linux 2023 and Amazon Linux 2 for both x86_64 and arm64 instances.
+<ul><li>I delayed mariadb and plocate installs until after swap has been configured for Ubuntu 22.04 to avoid Out of memory: oom-kill: errors that caused cloud-final to fail on a .5 GB t3.nano or t4g.nano instance.</li></ul></li>
+<li>Wednesday, May 3, 2023 - Launch x86 or ARM architecture instance</li>
+<li>Saturday, December 31, 2022 Use the default VPC for the AWS Region
+<ul><li>Use Private IP address instead of the fs-6f45fac6 unique resource identifier to access the AWS Elastic File System (EFS) in my default USA NW Oregon region.</li>
+<li>Update AMIs, add --tag-specifications and remove RCS references</li></ul></li>
+<li>Saturday, August 13, 2022 Switched to Ubuntu Server 22.04.1 t3.nano instance for main 24/7 server
+<ul><li>All Alaska LAN machines have been upgraded to Linux Mint 21 based on Ubuntu 22.04</li></ul></li>
+<li>Saturday, June 25, 2022 - Added Amazon Linux 2 based lam2 instance
+<ul><li>lam1 instance is now using Ubuntu Server 22.04</li>
+<li>aws instance is still using Ubuntu Server 20.04 until Linux Mint 21 Based on Ubuntu 22.04 LTS is released and the main ak20 server updated to that new version.</li>
+<li>Now using a new No upfront Linux/UNIX t3.nano Reservation for 36 months (Expires February 1, 2025 @ 14:49 (UTC-9:00).  This is costing me less than $1.50 per month for the instance not counting storage and network costs.</li></ul></li>
+<li>Wednesday, June 2, 2021 - Now using Ubuntu Server 20.04 ami-03d5c68bab01f3496
+<ul><li>Zz was grown on aws to a 42G EBS volume.</li></ul></li>
+<li>Sunday, December 20, 2020 - Now using Ubuntu Server 20.04 ami-07dd19a7900a1f049
+<ul><li>ak20 is now the main server and Zz has been added to aws in a new 40G EBS volume.</li></ul></li>
+<li>Friday, July 31, 2020 - Now using Ubuntu Server 20.04 ami-09dd2e08d601bff67
+<ul><li>I have begun publishing repos to GitHub.</li></ul></li>
+<li>Saturday, July 18, 2020 Switched to Ubuntu Server 20.04 t3.nano instance for main 24/7 server
+<ul><li>All Alaska LAN machines have been upgraded to Linux Mint 20 based on Ubuntu 20.04</li></ul></li>
+<li>Thursday, July 2, 2020 - I have reorganized all the sites hosted on the LAM AWS VPC and all are now tracked by git.
+<ul><li>Using Ubuntu Server 18.04 ami-003634241a8fcdec0 now but will go to Ubuntu Server 20.04 soon.</li></ul></li>
+<li>Thursday, July 4, 2019 - I paid less than $3.00 / Month including the $1.42 / month prepaid for the last three months.
+<ul><li>In May I added <a href="/a/AWS_S3_Glacier_Deep_Archive" title="AWS S3 Glacier Deep Archive">AWS S3 Glacier Deep Archive</a> and additional S3 Storage costs with a Disaster Recovery backup to the AWS Cloud.</li>
+<li>I paid over $5.00 in March when I ran an extra on demand t3.nano for over half the month as the lam2 ssh on port 443 proxy while on vacation in Cabo San Lucas, Baja California, Sur, Mexico.</li></ul></li>
+<li>Monday, February 4, 2019 - Purchased a 36 month t3.nano reservation for $51.00
+<ul><li>AWS applied the Free-Tier to calendar months and I started on the 4th. so I got almost 13 months discounted.  I paid $7.54 the 14th. month of a 24x7 web server with 335 hours of a t2.micro and 432 hours of a t3.nano as I switched to a smaller server instance while paying On Demand hourly pricing.  The next 36 months will still include charges for EBS, EFS, and bandwidth but will only include EC2 charges when I run a second server.  The total paid to AWS for the first 15 months of service averages to only $4 / month and since this includes the EC2 reservation good for 35 more months the average will continue to go down.</li></ul></li>
+<li>January 13, 2019 Switched aws to t3.nano instance still using Ubuntu Server 18.04 for main 24/7 server
+<ul><li>AWS Free tier for t2.micro instance has expired and a t3.nano instance is less expensive and can support the trivial load.</li></ul></li>
+<li>Sunday, January 6, 2019 my 12 Month Free-Tier offerings have expired and I pay for a lot more.
+<ul><li>I will switch to a t3.nano instead of a t2.micro soon before getting a reserved instance.  I have not decided how long to run on demand instances to see actual billing.</li>
+<li>So far it looks like total on demand costs are going to be less than $12.00 / month for the t2.micro and less than $6.00 / month for a t3.nano instance.</li></ul></li>
+<li>September 29, 2018 Switched aws to Ubuntu Server 18.04 on t2.micro instance utilizing Free Tier hours for main 24/7 server
+<ul><li>All Alaska LAN machines have been upgraded to Linux Mint 19 based on Ubuntu 18.04</li></ul></li>
+<li>Sunday, July 1, 2018 @ 4:02:51 PM (Alaska Time) Published using: <a href="/a/Stand_alone_from_MediaWiki_page" title="Stand alone from MediaWiki page">Stand alone from MediaWiki page</a>
+<ul><li>To aws:/var/www/no-ssl/About/index.html which is a symbolic link to the latest version.</li></ul></li>
+<li>Tuesday, April 10, 2018 @ 11:14:21 PM (Alaska Time) - Published to <a rel="nofollow" href="http://aws.lam1.us/About">http://aws.lam1.us/About</a></li>
+<li>Tuesday, March 20, 2018 (Alaska Time) - I created a set of Ubuntu CloudInit directives to start a proxy server that I could use when connected to the Internet via the WiFi at the Playa Grande Resort in Cabo San Lucas, Baha California, Sur, Mexico.
+<ul><li>This WiFi was blocking port 22 and other ports including some of my email servers. For this instance I configured ssh to use port 443 because both ports 80 and 443 were open for http and https traffic. I left Apache configuration less the HTTPS configuration.</li>
+<li>Ubuntu Server 16.04 LTS (HVM), SSD Volume Type - ami-4e79ed36</li></ul></li>
+<li>Sunday, December 3, 2017 (Alaska Time) I signed up for <a href="/a/Amazon_Web_Services_(AWS)" title="Amazon Web Services (AWS)">Amazon Web Services (AWS)</a>
+<ul><li>Use Ubuntu Server 16.04 which is what Linux Mint 18 is based on for t2.micro instance utilizing Free Tier hours for main 24/7 server</li>
+<li>The burglary and loss of server hardware at the Alaska LAN address prompted me to create an offsite clone to serve as the primary backup of the LAM Alaska website.</li></ul></li></ul>
+<!-- 
+NewPP limit report
+Cached time: 20240226073247
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.021 seconds
+Real time usage: 0.021 seconds
+Preprocessor visited node count: 203/1000000
+Post‐expand include size: 180/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:315-0!canonical and timestamp 20240226073247 and revision id 7524. Rendering was triggered because: edit-page
+ -->
+</div>
+</div>
+<!-- end content -->
+<div id="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" style="display:none" /><div lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><label for="toctogglecheckbox"></label></div>
+<ul>
+<li><a href="#About_LAM_AWS">1 About LAM AWS</a>
+<ul>
+<li><a href="#aws.lam1.us_sites.lam1.us">1.1 aws.lam1.us sites.lam1.us</a></li>
+</ul>
+</li>
+<li><a href="#LAM_AWS_resources">2 LAM AWS resources</a>
+<ul>
+<li><a href="#Public_IPv4_Address">2.1 Public IPv4 Address</a></li>
+<li><a href="#Use_a_predefined_security_group">2.2 Use a predefined security group</a></li>
+<li><a href="#Use_the_default_VPC_for_the_AWS_Region">2.3 Use the default VPC for the AWS Region</a>
+<ul>
+<li><a href="#The_LAMP_security_group_ID_is_unique_for_each_region">2.3.1 The LAMP security group ID is unique for each region</a></li>
+</ul>
+</li>
+<li><a href="#Use_a_persistent_parallel_file_system">2.4 Use a persistent parallel file system</a></li>
+<li><a href="#Use_a_persistent_48G_General_Purpose_SSD_EBS_volume">2.5 Use a persistent 48G General Purpose SSD EBS volume</a></li>
+</ul>
+</li>
+<li><a href="#LAM_AWS_command_line_options">3 LAM AWS command line options</a></li>
+<li><a href="#LAM_AWS_EC2_instance_initialization_by_Operating_System_/_Architecture_/_PublicIPv4">4 LAM AWS EC2 instance initialization by Operating System / Architecture / PublicIPv4</a>
+<ul>
+<li><a href="#Amazon_Machine_Image_by_Operating_System_/_Architecture">4.1 Amazon Machine Image by Operating System / Architecture</a></li>
+<li><a href="#LAM_AWS_user-data_is_a_set_of_CloudInit_directives">4.2 LAM AWS user-data is a set of CloudInit directives</a>
+<ul>
+<li><a href="#Instance_to_take_over_lam1">4.2.1 Instance to take over lam1</a>
+<ul>
+<li><a href="#Instance_designed_to_initiate_without_public_IPv4_access">4.2.1.1 Instance designed to initiate without public IPv4 access</a></li>
+<li><a href="#cloud-init_for_without_public_IPv4_access_instance_with_broken_AWS_Ubuntu_22.04_ARM_AMI">4.2.1.2 cloud-init for without public IPv4 access instance with broken AWS Ubuntu 22.04 ARM AMI</a></li>
+</ul>
+</li>
+<li><a href="#lam2_Instance_to_be_a_SSH_SOCKS5_Proxy_server_on_port_443">4.2.2 lam2 Instance to be a SSH SOCKS5 Proxy server on port 443</a>
+<ul>
+<li><a href="#This_instance_doesn&#39;t_check_in_to_a_Dynamic_Domain_Name_Service">4.2.2.1 This instance doesn't check in to a Dynamic Domain Name Service</a></li>
+</ul>
+</li>
+<li><a href="#lam2_Instance_running_Amazon_Linux_2_rather_than_Ubuntu_Server">4.2.3 lam2 Instance running Amazon Linux 2 rather than Ubuntu Server</a>
+<ul>
+<li><a href="#Instance_designed_to_initiate_without_public_IPv4_access_2">4.2.3.1 Instance designed to initiate without public IPv4 access</a></li>
+</ul>
+</li>
+<li><a href="#lam2_Instance_running_Amazon_Linux_2023">4.2.4 lam2 Instance running Amazon Linux 2023</a>
+<ul>
+<li><a href="#This_cloud-init_fails_if_the_instance_has_less_than_1.0_GiB_of_Memory.">4.2.4.1 This cloud-init fails if the instance has less than 1.0 GiB of Memory.</a></li>
+<li><a href="#Instance_designed_to_initiate_without_public_IPv4_access_3">4.2.4.2 Instance designed to initiate without public IPv4 access</a></li>
+<li><a href="#This_cloud-init_fails_if_the_instance_has_less_than_1.0_GiB_of_Memory._2">4.2.4.3 This cloud-init fails if the instance has less than 1.0 GiB of Memory.</a></li>
+</ul>
+</li>
+<li><a href="#lam2_Instance_running_Debian_12">4.2.5 lam2 Instance running Debian 12</a>
+<ul>
+<li><a href="#This_instance_is_designed_to_initiate_without_public_IPv4_access.">4.2.5.1 This instance is designed to initiate without public IPv4 access.</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#Amazon_Instance_Type_by_Architecture_and_size">4.3 Amazon Instance Type by Architecture and size</a></li>
+<li><a href="#Launch_a_LAM_AWS_EC2_instance_from_the_command_line">4.4 Launch a LAM AWS EC2 instance from the command line</a></li>
+<li><a href="#The_LAM_AWS_EC2_instance_initializations_perform_the_following:">4.5 The LAM AWS EC2 instance initializations perform the following:</a></li>
+</ul>
+</li>
+<li><a href="#LAM_AWS_Updates_and_Backups">5 LAM AWS Updates and Backups</a>
+<ul>
+<li><a href="#Latest_daily_backup_to_persistent_storage_is_used_for_initialization">5.1 Latest daily backup to persistent storage is used for initialization</a></li>
+<li><a href="#New_instance_initialization_includes_a_full_upgrade_of_the_latest_Amazon_Machine_Image">5.2 New instance initialization includes a full upgrade of the latest Amazon Machine Image</a></li>
+<li><a href="#CloudInit_directives_and_a_set_of_scripts_control_use_and_creation_of_daily_backups">5.3 CloudInit directives and a set of scripts control use and creation of daily backups</a></li>
+</ul>
+</li>
+<li><a href="#Repos_for_LAM_AWS_Linux_Apache_MariaDB_in_the_cloud">6 Repos for LAM AWS Linux Apache MariaDB in the cloud</a></li>
+<li><a href="#Log">7 Log</a></li>
+</ul>
+</div>
+<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=7524">https://ak20.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=7524</a>"</div>
+</body></html>
