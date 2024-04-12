@@ -63,7 +63,7 @@ my $pageHeader = "\n" .	"$path/" . # Include link to whatis time
     a({-href=>"/whatis/time&Search+type=both"} , 'time');
 
 print '<a href="/"><font size=+2>', $date_and_time ,'</font></a>',
- "\n" , ' &nbsp; <a href="http://www.time.gov">',
+ "\n" , ' &nbsp; <a href="http://www.time.gov/#ak-col">',
  "\n" ,  '(Alaska Time)</a>', "\n<p>SCRIPT_NAME: ", '&nbsp; ', $pageHeader,
  '&nbsp; ', "SERVER_NAME: ", $ENV{SERVER_NAME},
  "\n<br>" , '<a href="/time">/time</a> is ',
