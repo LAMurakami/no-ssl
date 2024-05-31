@@ -34,6 +34,8 @@ my $newDir = qx(date '+%y%m%d'); chop($newDir);                          # YYMMD
 -d "$cF{'Log Base'}/$newDir"                             # Check if newDir exists
  or system("mkdir $cF{'Log Base'}/$newDir");               # and create it if not
 
+system("chmod 775 $cF{'Log Base'}/$newDir");     # allow group to write to newDir
+
 my $outPrefix = $programName; my $gen = 1;                 # Set prefix for files
 while (-e "$cF{'Log Base'}/$newDir/$outPrefix.out") { # If gen level is used
     $gen++; $outPrefix = "$programName.$gen";  # Increment out prefix generation
