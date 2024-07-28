@@ -12,11 +12,11 @@ authentication over IPv6 as well as IPv4 unlike the
 Repostories that can only be accessed over IPv6 with the
 [IPv6 only workaround.](https://lamurakami.github.io/blog/2024/06/05/Access-GitHub-com-from-an-instance-without-a-public-IPv4-address.html)
 
-## Default unsecure site &lt;http%3A%2F%2F&gt; configuration
+## Default unsecure site &lt;http&gt; configuration
 [www.lam1.us](http://www.lam1.us/)
 [www.lamurakami.com](http://www.lamurakami.com/)
 
-Default unsecure site &lt;http%3A%2F%2F&gt; configuration.
+Default unsecure site &lt;http&gt; configuration.
 
 This repo contains content in the html folder and an apache2 configuration.
 
