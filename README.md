@@ -1,9 +1,9 @@
 # Linux Apache MariaDB in the cloud
 ## GitLab and GitHub public Projects/Repositories
 The
-[gitlab.com/aws-lam/aws](https://gitlab.com/aws-lam/aws)
+[gitlab.com/aws-lam/no-ssl](https://gitlab.com/aws-lam/no-ssl)
 Project is a clone of the
-[github.com/LAMurakami/aws](https://github.com/LAMurakami/aws)
+[github.com/LAMurakami/no-ssl](https://github.com/LAMurakami/no-ssl)
 Repostory.  My
 [gitlab.com/LAMurakami](https://gitlab.com/LAMurakami)
 account was created so that Projects can be cloned using https without
