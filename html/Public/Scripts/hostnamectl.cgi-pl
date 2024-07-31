@@ -1,0 +1,21 @@
+#!/usr/bin/perl
+
+use LAM::LAM qw(displaySource displayPage);                # Lexicon Abstact Map
+use CGI qw(:all);                        # Perl Common Gateway Interface package
+use strict;                            # Force me to use strict variable syntax.
+use warnings;                                             # Enable all warnings.
+
+LAM::displaySource();                 # Display source, rlog, etc. if requested.
+
+my $hostName = qx(uname -n | cut --delimiter=. --fields=1);   # Report Host Name
+
+my $hostnamectlCommand = '/usr/bin/hostnamectl';
+my $tmpfs = 0 ; if (defined param('tmpfs')) { $tmpfs = param('tmpfs') }
+
+my $result = qx($hostnamectlCommand);  # Get results: Control the system hostname
+
+LAM::displayPage('-c', '-i', 'LAM', '-t', "$hostName hostnamectl", '',
+    center(h1('LAM Alaska'). "\n".
+    h2("Host Name Control Information"). "\n"
+    . textarea({-name=>'Host Name Control Information', -wrap=>'soft',
+    -rows=>14, -columns=>55, -value=>$result, -READONLY=>1})));
