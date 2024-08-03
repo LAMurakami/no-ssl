@@ -5,12 +5,12 @@ use CGI qw(:all);                        # Perl Common Gateway Interface package
 use strict;                            # Force me to use strict variable syntax.
 use warnings;                                             # Enable all warnings.
 
-LAM::displaySource();                 # Display source, rlog, etc. if requested.
+LAM::displaySource(                   # Display source, rlog, etc. if requested.
+'https://gitlab.com/aws-lam/no-ssl/-/blob/master/html/Public/Scripts/hostnamectl.cgi-pl?ref_type=heads');
 
 my $hostName = qx(uname -n | cut --delimiter=. --fields=1);   # Report Host Name
 
 my $hostnamectlCommand = '/usr/bin/hostnamectl';
-my $tmpfs = 0 ; if (defined param('tmpfs')) { $tmpfs = param('tmpfs') }
 
 my $result = qx($hostnamectlCommand);  # Get results: Control the system hostname
 

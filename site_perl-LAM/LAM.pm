@@ -146,16 +146,16 @@ my $oP = ''; if(defined $ARGV[0]){ $oP = $ARGV[0];                     opTest: {
     if ($oP eq 'rlog') {displayRCSlog(); last opTest}          # Display RCS log
     if ($oP eq 'diff') {displayRCSdiff(); last opTest}        # Display RCS diff
     if ($oP eq 'lam.pm') {
-reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/LAM.pm");
+reDirect(0,"https://gitlab.com/aws-lam/no-ssl/-/blob/master/site_perl-LAM/LAM.pm?ref_type=heads");
                           last opTest}
     if ($oP eq 'multicount.pm') {
-reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/Multicount.pm");
+reDirect(0,"https://gitlab.com/aws-lam/no-ssl/-/blob/master/site_perl-LAM/Multicount.pm?ref_type=heads");
                           last opTest}
     if ($oP eq 'sql.pm') {
-reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/SQL.pm");
+reDirect(0,"https://gitlab.com/aws-lam/no-ssl/-/blob/master/site_perl-LAM/SQL.pm?ref_type=heads");
                           last opTest}
     if ($oP eq 'getdbvalue.pm') {
-reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/GetDBvalue.pm");
+reDirect(0,"https://gitlab.com/aws-lam/no-ssl/-/blob/master/site_perl-LAM/GetDBvalue.pm?ref_type=heads");
                           last opTest}   }   }                     # end opTest:
 my $pI = ''; if ($ENV{PATH_INFO}) {$pI = "\L$ENV{PATH_INFO}";        pathTest: {
     if ($pI eq '/txt') {displayTextFile(); last pathTest}       # Display source
@@ -167,16 +167,16 @@ my $pI = ''; if ($ENV{PATH_INFO}) {$pI = "\L$ENV{PATH_INFO}";        pathTest: {
     if ($pI eq '/rlog') {displayRCSlog(); last pathTest}       # Display RCS log
     if ($pI eq '/diff') {displayRCSdiff(); last pathTest}     # Display RCS diff
     if ($pI eq '/lam.pm') {
-reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/LAM.pm");
+reDirect(0,"https://gitlab.com/aws-lam/no-ssl/-/blob/master/site_perl-LAM/LAM.pm?ref_type=heads");
                           last pathTest}
     if ($pI eq '/multicount.pm') {
-reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/Multicount.pm");
+reDirect(0,"https://gitlab.com/aws-lam/no-ssl/-/blob/master/site_perl-LAM/Multicount.pm?ref_type=heads");
                           last pathTest}
     if ($pI eq '/sql.pm') {
-reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/SQL.pm");
+reDirect(0,"https://gitlab.com/aws-lam/no-ssl/-/blob/master/site_perl-LAM/SQL.pm?ref_type=heads");
                           last pathTest}
     if ($pI eq '/getdbvalue.pm') {
-reDirect(0,"https://github.com/LAMurakami/no-ssl/blob/master/site_perl-LAM/GetDBvalue.pm");
+reDirect(0,"https://gitlab.com/aws-lam/no-ssl/-/blob/master/site_perl-LAM/GetDBvalue.pm?ref_type=heads");
                           last pathTest}   }    }                # end pathTest:
 if (param('Submit')) {my $submitRequest = param('Submit');     
     if ($submitRequest eq 'View') {if (param('Plain')) {
