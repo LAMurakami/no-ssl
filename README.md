@@ -73,7 +73,7 @@ instance shared with all the LAM AWS EC2 instances is mounted by nfs4.
 The site subdirectories and additional software is installed from tgz
 archives on this persistant shared filesystem.
 
-* [apache2.conf](https://gitlab.com/aws-lam/aws/-/blob/master/apache2.conf?ref_type=heads)
+* [apache2.conf](https://gitlab.com/aws-lam/no-ssl/-/blob/master/apache2.conf?ref_type=heads)
 is the main apache2 configuration file.  The /Public alias is
 included here allowing no-ssl/html/Public/ content to be accessed from any
 site and a set of /var/www/no-ssl/html/Public/Scripts Directory directives
@@ -81,10 +81,11 @@ defining .cgi-pl as scripts to be accessed from any site.
 A set of custom error handlers are also defined here.
 
 * The
+[aws_apache2.conf](https://gitlab.com/aws-lam/aws/-/blob/master/aws_apache2.conf?ref_type=heads),
 [aws_ssl_lam1_apache2.conf](https://gitlab.com/aws-lam/aws/-/blob/master/aws_ssl_lam1_apache2.conf?ref_type=heads)
 and
 [aws_ssl_duckdns_apache2.conf](https://gitlab.com/aws-lam/aws/-/blob/master/aws_ssl_duckdns_apache2.conf?ref_type=heads)
-apache2 configuration files implment the secure site using lam1.us and duckdns.org keys respectively.
+apache2 configuration files implment the non secure site, secure site using lam1.us and secure site duckdns.org keys respectively.
 
 * [cloud-init.pl](https://gitlab.com/aws-lam/aws/-/blob/master/cloud-init.pl?ref_type=heads)
 applies the public-hostname, public-ipv4, local-hostname and
