@@ -87,13 +87,6 @@ and
 [aws_ssl_duckdns_apache2.conf](https://gitlab.com/aws-lam/aws/-/blob/master/aws_ssl_duckdns_apache2.conf?ref_type=heads)
 apache2 configuration files implment the non secure site, secure site using lam1.us and secure site duckdns.org keys respectively.
 
-* [cloud-init.pl](https://gitlab.com/aws-lam/aws/-/blob/master/cloud-init.pl?ref_type=heads)
-applies the public-hostname, public-ipv4, local-hostname and
-local-ipv4 values from the /var/log/cloud-init-output.log to the
-/var/www/aws/html/index.html and /var/www/aws/aws_apache2.conf files so the
-Dynamic Domain Name Service page is displayed when the AWS public domain name
-or IP address is visited.
-
 * &lt;site&gt;_apache2.conf is the site apache2 configuration file.  The LAM AWS
 EC2 LAMP instance does not support .htaccess files.  The &lt;site&gt;_apache2.conf
 file is linked into /etc/apache2/sites-available and then enabled with
