@@ -35,27 +35,26 @@ content in a html/ subdirectory as outlined below:
 <pre>/var/www/aws/
          |-- aws-lam1-Ubuntu-24-Noble-CloudInit.txt
          |-- cloud-init.pl
-         |-- &lt;site&gt;_apache2.conf
-         |-- &lt;site&gt;_archive_rebuild.bash
+         |-- aws_apache2.conf
+         |-- aws_ssl_lam1_apache2.conf
+         |-- aws_ssl_duckdns_apache2.conf
          |-- html/           DocumentRoot /var/www/aws/html/
 /var/www/no-ssl/
          |-- apache2.conf
          |-- Implement_no-ssl_conf.bash
          |-- Implement_more_sites_conf.bash
          |-- Implement_more_apache2_stuff.bash
-         |-- &lt;site&gt;_apache2.conf
-         |-- &lt;site&gt;_archive_rebuild.bash
+         |-- no-ssl_apache2.conf
          |-- html/           DocumentRoot /var/www/no-ssl/html/
              |-- Public/
                  |-- Scripts/
 /var/www/&lt;additional-sites&gt;/
          |-- &lt;site&gt;_apache2.conf
-         |-- &lt;site&gt;_archive_rebuild.bash
+         |-- &lt;site&gt;_ssl_lam1_apache2.conf
          |-- html/           DocumentRoot /var/www/&lt;additional-sites&gt;/html/
 /var/www/lam/
          |-- Implement_lam_conf.bash
-         |-- &lt;site&gt;_apache2.conf
-         |-- &lt;site&gt;_archive_rebuild.bash
+         |-- lam_apache2.conf
          |-- .ht{group,passwd}
          |-- data/
          |-- html/           DocumentRoot /var/www/lam/html/
@@ -74,11 +73,18 @@ instance shared with all the LAM AWS EC2 instances is mounted by nfs4.
 The site subdirectories and additional software is installed from tgz
 archives on this persistant shared filesystem.
 
-* apache2.conf is the main apache2 configuration file.  The /Public alias is
+* [apache2.conf](https://gitlab.com/aws-lam/aws/-/blob/master/apache2.conf?ref_type=heads)
+is the main apache2 configuration file.  The /Public alias is
 included here allowing no-ssl/html/Public/ content to be accessed from any
 site and a set of /var/www/no-ssl/html/Public/Scripts Directory directives
 defining .cgi-pl as scripts to be accessed from any site.
 A set of custom error handlers are also defined here.
+
+* The
+[aws_ssl_lam1_apache2.conf](https://gitlab.com/aws-lam/aws/-/blob/master/aws_ssl_lam1_apache2.conf?ref_type=heads)
+and
+[aws_ssl_duckdns_apache2.conf](https://gitlab.com/aws-lam/aws/-/blob/master/aws_ssl_duckdns_apache2.conf?ref_type=heads)
+apache2 configuration files implment the secure site using lam1.us and duckdns.org keys respectively.
 
 * [cloud-init.pl](https://gitlab.com/aws-lam/aws/-/blob/master/cloud-init.pl?ref_type=heads)
 applies the public-hostname, public-ipv4, local-hostname and
@@ -94,18 +100,6 @@ a2ensite in the Implement_more_sites_conf.bash script which also assigns
 a three digit numerical order for the sites.  Force apache2 to read any
 changes in configuration files with:
  systemctl reload apache2
-
-* &lt;site&gt;_archive_rebuild.bash is a script to rebuild a tar archive if anything
-has changed since the archive was last rebuilt.  By not rebuilding the archive
-if nothing has changed the data transmitted to a remote copy of the backups is
-reduced.  The whole archive will be transmitted if any file changes but the
-archive is compressed.  The archive rebuild should only be run on the master
-system and not on clones.  The script is linked into the backup directory with:
- ln -s /var/www/${REPO}/${REPO}_archive_rebuild.bash \
- /mnt/efs/aws-lam1-ubuntu/${REPO}
-The script will only run if the archive file already exists as it is used as
-the Newer reference.  Create a zero byte archive file with an old date with:
- touch -d 1955-05-20 /mnt/efs/aws-lam1-ubuntu/${REPO}.tgz
 
 * site_perl-LAM contains perl modules to be linked into site_perl.
 The modules simplify a number of cgi perl routines used in both Public
