@@ -33,7 +33,7 @@ The configuration and content is split into several sub directories of
 content in a html/ subdirectory as outlined below:
 
 <pre>/var/www/aws/
-         |-- aws-nwo-lam1-Ubuntu-CloudInit.txt
+         |-- aws-lam1-Ubuntu-24-Noble-CloudInit.txt
          |-- cloud-init.pl
          |-- &lt;site&gt;_apache2.conf
          |-- &lt;site&gt;_archive_rebuild.bash
@@ -65,7 +65,7 @@ content in a html/ subdirectory as outlined below:
 * Implement* These four scripts will implement the configuration when run
 with root (sudo) permissions.
 
-* aws-nwo-lam1-Ubuntu-CloudInit.txt is the configuration for the initializaton
+* [aws-lam1-Ubuntu-24-Noble-CloudInit.txt](https://gitlab.com/aws-lam/aws/-/blob/master/aws-lam1-Ubuntu-24-Noble-CloudInit.txt?ref_type=heads) is a configuration for the initializaton
 of the instance during the first and subsequent boots.  During the first boot
 it updates all the installed packages and then installs additional packages
 to support LAMP model web services including a MediaWiki installation.
@@ -80,7 +80,8 @@ site and a set of /var/www/no-ssl/html/Public/Scripts Directory directives
 defining .cgi-pl as scripts to be accessed from any site.
 A set of custom error handlers are also defined here.
 
-* cloud-init.pl applies the public-hostname, public-ipv4, local-hostname and
+* [cloud-init.pl](https://gitlab.com/aws-lam/aws/-/blob/master/cloud-init.pl?ref_type=heads)
+applies the public-hostname, public-ipv4, local-hostname and
 local-ipv4 values from the /var/log/cloud-init-output.log to the
 /var/www/aws/html/index.html and /var/www/aws/aws_apache2.conf files so the
 Dynamic Domain Name Service page is displayed when the AWS public domain name
@@ -111,6 +112,5 @@ The modules simplify a number of cgi perl routines used in both Public
 and Private scripts of the sites.
 
 See Also:
-* [aws repo README.md](https://github.com/LAMurakami/aws#readme)
-* [arsc repo README.md](https://github.com/LAMurakami/arsc#readme)
-* [ubuntu-etc repo README.md](https://github.com/LAMurakami/ubuntu-etc#readme) Ubuntu Server 20.04 configuration changes for LAM AWS VPC EC2 instances
+* [aws repo](https://gitlab.com/aws-lam/aws/-/tree/master?ref_type=heads)
+* [arsc repo](https://gitlab.com/aws-lam/arsc/-/tree/master?ref_type=heads)
