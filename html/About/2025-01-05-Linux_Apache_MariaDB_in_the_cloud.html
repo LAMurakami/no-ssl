@@ -32,7 +32,7 @@ Linux Apache MariaDB in the cloud
 <h3><span id="aws.lam1.us_sites.lam1.us"><a rel="nofollow" href="http://aws.lam1.us">aws.lam1.us</a> <a rel="nofollow" href="http://sites.lam1.us">sites.lam1.us</a></span></h3>
 <p>The LAM AWS server instance was initially designed to utilize a t2.micro EC2 instance which is part of the AWS Free Tier offering starting in 2017.  That offering includes 750 Hours / month of a t2.micro Elastic Compute Cloud (EC2) instance which is enough to run one instance 24/7.  The instance can scale up by using a larger and more capable server and other options or scale down to a t4g.nano or other server sizes cheaper than a t2.micro except under the (AWS) Free Tier offering.  Multiple groups of virtual hosts can all run on one server or a separate server can be used for each group or single host.  Once the Free Tier was over the t2.micro server was found to cost less than $12.00 / month with the initial sizing and usage On Demand and less than $2.00 / month using a t3.nano EC2 instance reserved prepaid for 3 years.  The less expensive t3.nano and then t4g.nano instances were tested and found to support the web and proxy services by being my cloud host after t2.micro hours got more expensive than free.  The server is mostly idle although memory usage runs at 75% on a t3.nano and nearly 50% on a t2.micro.
 </p><p>A single LAM AWS server instance can host multiple websites, including multiple secure websites, with Apache2 on Linux and includes MariaDB, Perl, Python, PHP and other common development tools.  Additional packages installed support running MediaWiki and more.  The LAM AWS server is built on the latest Ubuntu Server Amazon Machine Image (AMI) with an EBS General Purpose (SSD) Volume.  The resulting image is similar enough to the Linux Mint distribution I use on the newer machines at home and on my laptop so that cloning my MediaWiki and lam databases from the main server to either an aws instance or Linux Mint machine can be done with the same procedure.
-</p><p>In 2023 the LAM AWS VPC in the us-west-2 Oregon region was modified with an Amazon provided IPv6 CIDR block and the subnet for each availability zone allocated a subset of the block and configured to automatically assign an IPv6 address to a new instance interface.  In 2024 the  LAM AWS VPC was modified in an additional 29 AWS regions and an EFS created and populated and the cloud-init process enhanced so that instances can be launched with or without a public IPv4 address on either x86 or ARM processor types with any of the latest Debian, Ubuntu or Amazon Linus operating system AMIs.  As of 2024 the us-west-2 Oregon region is where my main instance runs and is the only AWS instance that has the additional 50 GB-Mo of General Purpose SSD (gp2) volume to mirror the /Zz directory.  The us-west-2 Oregon efs is the only one populated with the git repositories of the remote and all the initialization files.  Until 2024 the us-west-2 Oregon region was the only one where I operated.
+</p><p>In 2023 the LAM AWS VPC in the us-west-2 Oregon region was modified with an Amazon provided IPv6 CIDR block and the subnet for each availability zone allocated a subset of the block and configured to automatically assign an IPv6 address to a new instance interface.  In 2024 the  LAM AWS VPC was modified in an additional 29 AWS regions and an EFS created and populated and the cloud-init process enhanced so that instances can be launched with or without a public IPv4 address on either x86 or ARM processor types with any of the latest Debian, Ubuntu or Amazon Linux operating system AMIs.  As of 2024 the us-west-2 Oregon region is where my main instance runs and is the only AWS instance that has the additional 50 GB-Mo of General Purpose SSD (gp2) volume to mirror the /Zz directory.  The us-west-2 Oregon efs is the only one populated with the git repositories of the remote and all the initialization files.  Until 2024 the us-west-2 Oregon region was the only one where I operated.
 </p><p>In 2024 I modified the web configuration so that my public named host websites default to https although I still support them with the http protocol.  Before 2024 only the lam site with the mediawiki and other Private was served over the Secure extension of the Hypertext Transfer Protocol which originally used SSL encryption and now uses TLS encryption.  I did this because I noticed my phone browser would default to the https protocol and made it more difficult for me to view the <a rel="nofollow" href="https://cabo.lam1.us/Weeks">cabo.lam1.us/Weeks</a> website and I decided I agree that all sites should be served over an encrypted protocol.
 </p>
 <h2><span id="LAM_AWS_resources">LAM AWS resources</span></h2>
@@ -346,13 +346,11 @@ KEYNAME=lam2-SUSE-No-Public-IPv4-${REGION}-${INSTANCE_TYPE}${PublicIPv4}
 <h3><span id="Launch_a_LAM_AWS_EC2_instance_from_the_command_line">Launch a LAM AWS EC2 instance from the command line</span></h3>
 <p>The awscli package includes the aws command which includes the ability to launch a new instance.
 </p>
-<pre>aws ec2 run-instances --count 1 --image-id ${AMI}  --region ${REGION} \
+<pre>aws ec2 run-instances --count 1 --image-id ${AMI} --region ${REGION} \
+--block-device-mapping DeviceName=${AMI_RootDeviceName},Ebs={VolumeSize=10} \
 --instance-type ${INSTANCE_TYPE} --security-group-ids ${SECURITY_GROUP} \
---tag-specifications "ResourceType=instance,Tags=[\
-{Key=Name,Value=${KEYNAME}},\
-{Key=EFS,Value=fs-6f45fac6.efs.us-west-2.amazonaws.com}]" \
-${PublicIPv4} --key-name ${KEYPAIR} --user-data \
-file://${CLOUD_INIT}
+--tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=${KEYNAME}}]" \
+--key-name ${KEYPAIR} ${PublicIPv4} --user-data file://${CLOUD_INIT}
 </pre>
 <p><a href="/a/Amazon_Web_Services_(AWS)" title="Amazon Web Services (AWS)">Amazon Web Services (AWS)</a>
 </p>
@@ -386,11 +384,11 @@ file://${CLOUD_INIT}
 </p><p>A set of scripts on the persistent parallel file system are included in daily backups on the main server to keep the backups up to date.  Any configuration file changes from package defaults must be included in the backups and or applied during the new instance initialization.
 </p>
 <h2><span id="Repos_for_LAM_AWS_Linux_Apache_MariaDB_in_the_cloud">Repos for <a rel="nofollow" href="http://aws.lam1.us">LAM AWS Linux Apache MariaDB in the cloud</a></span></h2>
-<p>I have published some of the repos of the server configuration and the content in the html folder and an apache2 configuration for the websites to <a rel="nofollow" href="https://github.com/LAMurakami">GitHub</a>.
+<p>I have published some of the repos of the server configuration and the content in the html folder and an apache2 configuration for the websites to <a rel="nofollow" href="https://github.com/LAMurakami">GitHub</a> and <a rel="nofollow" href="https://gitlab.com/aws-lam">GitLab</a>.
 </p>
-<ul><li><a rel="nofollow" href="https://github.com/LAMurakami/aws#readme">aws#readme</a> Linux Apache MariaDB in the cloud</li>
-<li><a rel="nofollow" href="https://github.com/LAMurakami/no-ssl#readme">no-ssl#readme</a> Default unsecure site configuration</li>
-<li><a rel="nofollow" href="https://github.com/LAMurakami/arsc#readme">arsc#readme</a> Lawrence A. Murakami at ARSC</li>
+<ul><li><a rel="nofollow" href="https://gitlab.com/aws-lam/aws/-/blob/master/README.md">aws README</a> Linux Apache MariaDB in the cloud</li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/no-ssl/-/blob/master/README.md">no-ssl README</a> Default unsecure site configuration</li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/arsc/-/blob/master/README.md">arsc README</a> Lawrence A. Murakami at ARSC</li>
 <li>An additional lam repo does not have a public remote because it has configuration files with encrypted passwords and other information that should not be published.  The lam repo contains configuration and content for the secure side of the web server.  This includes Mediawiki configuration and the MariaDB credentials to access the database.</li></ul>
 <h2><span id="Log">Log</span></h2>
 <ul><li>Published Page location: <a rel="nofollow" href="http://aws.lam1.us/About">http://aws.lam1.us/About</a> <a rel="nofollow" href="http://sites.lam1.us/About">http://sites.lam1.us/About</a></li>
@@ -538,7 +536,7 @@ file://${CLOUD_INIT}
 <li>The burglary and loss of server hardware at the Alaska LAN address prompted me to create an offsite clone to serve as the primary backup of the LAM Alaska website.</li></ul></li></ul>
 <!-- 
 NewPP limit report
-Cached time: 20250106030711
+Cached time: 20250106034920
 Cache expiry: 86400
 Reduced expiry: false
 Complications: [show‐toc]
@@ -557,14 +555,13 @@ Transclusion expansion time report (%,ms,calls,template)
 100.00%    0.000      1 -total
 -->
 
-<!-- Saved in parser cache with key wikidb:pcache:idhash:315-0!canonical and timestamp 20250106030710 and revision id 8344. Rendering was triggered because: edit-page
+<!-- Saved in parser cache with key wikidb:pcache:idhash:315-0!canonical and timestamp 20250106034920 and revision id 8347. Rendering was triggered because: edit-page
  -->
 </div>
 </div>
 <!-- end content -->
-
 <div id="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" style="display:none" /><div lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><label for="toctogglecheckbox"></label></div>
-<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=8344">https://ak20.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=8344</a>"</div>
+<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=8347">https://ak20.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=8347</a>"</div>
 <ul>
 <li><a href="#About_LAM_AWS">1 About LAM AWS</a>
 <ul>
