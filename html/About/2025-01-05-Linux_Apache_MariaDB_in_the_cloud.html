@@ -22,7 +22,7 @@ Linux Apache MariaDB in the cloud
 <p>My main LAM AWS instance is a Dual stack (IPv4 and IPv6) web server, ssh proxy and ssh tunnel server.  This main instance is currently required for a number of IPv6 workarounds I use to initialize an instance without a public IPv4 address.  It is also used as an ssh proxy by my laptop, which currently does not have a public IPv6 address, for access to servers with only IPv6 connectivity.  Since August of 2024 the main LAM AWS server instance provides access to my main git remote repo store.
 </p><p>This Linux Apache MariaDB (LAM) instance is in the cloud on Amazon Web Services (AWS) servers.  I currently run my main instance in the Oregon (US West 2 region) which is one of the cheapest regions for AWS pricing.  The inclusion of support for the Perl, Python and PHP application programming languages makes this a <a rel="nofollow" href="https://en.wikipedia.org/wiki/LAMP_(software_bundle)">LAMP</a> model web service software stack instance.
 </p><p>The LAM AWS server instance was created to host my public named host websites and be a backup of the mediawiki installation and home grown perl database web interface on the secure side of my main server.  These utilize a MariaDB server on the same machine.  The server is also used as an ssh proxy for browsing the web.
-</p><p>The main server instance is now running on a t4g.nano instance under an all upfront cost 36 month reservation.  This prorates to less than  $1.50 / month which is a considerable savings over the On Demand rate.  The t4g.nano instance 36 month reservation covers 1 EC2 instance but does not include any EC2 EBS storage which is required for the Ubuntu Server image used for the Operating System.  I pay $0.80 for 8 GB-Mo of General Purpose SSD (gp2) which is the standard configuration for the Latest Ubuntu Server image.  I pay $0.30 for 1 GB-Mo of storage on the us-west-2 Oregon AWS Elastic File System (<a href="/a/Amazon_Web_Services_(AWS)#Elastic_File_System_(EFS)" title="Amazon Web Services (AWS)">EFS</a>) at the USD $0.30 per GB-Mo for Standard storage (USW2) rate.  The AWS EFS storage is among the most expensive but it is extremely convenient to have a <a href="#Use_a_persistent_parallel_file_system">persistent parallel file system</a> that can be mounted with the Linux nfs4 package available during the Instance Initialization.  I pay $5.00 / month for an additional 50 GB-Mo of General Purpose SSD (gp2) for the volume to mirror the /Zz directory.  I have an AWS EFS in all 30 regions I can currently access but the storage is negligible (less than 150K) on every EFS except my main one in the us-west-2 Oregon region.
+</p><p>The main server instance is now running on a t4g.nano instance under an all upfront cost 36 month reservation.  This prorates to less than  $1.50 / month which is a considerable savings over the On Demand rate.  The t4g.nano instance 36 month reservation covers 1 EC2 instance but does not include any EC2 EBS storage which is required for the Ubuntu Server image used for the Operating System.  I pay $1.00 for 10 GB-Mo of General Purpose SSD (gp2) which is 25% more than the standard configuration for the Latest Ubuntu Server image.  I pay $0.30 for 1 GB-Mo of storage on the us-west-2 Oregon AWS Elastic File System (<a href="/a/Amazon_Web_Services_(AWS)#Elastic_File_System_(EFS)" title="Amazon Web Services (AWS)">EFS</a>) at the USD $0.30 per GB-Mo for Standard storage (USW2) rate.  The AWS EFS storage is among the most expensive but it is extremely convenient to have a <a href="#Use_a_persistent_parallel_file_system">persistent parallel file system</a> that can be mounted with the Linux nfs4 package available during the Instance Initialization.  I pay $5.00 / month for an additional 50 GB-Mo of General Purpose SSD (gp2) for the volume to mirror the /Zz directory.  I have an AWS EFS in all 30 regions I can currently access but the storage is negligible (less than 150K) on every EFS except my main one in the us-west-2 Oregon region.
 </p>
 <h3><span id="My_main_private_git_remote_store">My main private git remote store</span></h3>
 <p>Since August of 2024 the aws.lam1.us instance is my main private git remote store.  This was also when I made GitLab my main public git remote store.  Both the aws.lam1.us instance and GitLab have dual stack IP access supporting both IPv4 and IPv6 protocols.  With the proper ssh_config and credentials matching an authorized_keys entry for the git@aws user the following will work:
@@ -72,10 +72,6 @@ PublicIPv4='--associate-public-ip-address' # Public IPv4 address costs $43.80/Ye
 <pre>KEYPAIR=lam-arsc
 </pre>
 <p>Prior to my expansion into other regions I had let AWS create an aws-nwo-lam1 key pair and I used that to access instances launched in us-west-2 Oregon.  Quickly I was adding the passphrase protected key pair I have been using on my laptops since working at <a rel="nofollow" href="http://arsc.lam1.us/About">ARSC</a> to every cloud-init file.  The AWS key pairs are managed in the EC2 area of the console and not the VPC area but they are only available in the region that they they are created or imported into.  I decided to import my main key into all the regions which eliminates the need to use the key pair I had ley Amazon create for me in 2017.
-</p>
-<pre>EFS=value-not-used
-</pre>
-<p>The EFS name value pair as an AWS instance tag was never utilized during initialization and the <a rel="nofollow" href="https://lamurakami.github.io/aws-efs/">(AWS) Elastic File System (EFS)</a> directory with a file for each region specifying the EFS name was created on my GitHub pages website instead to allow me to mount the LAM aws-efs for the region the instance was launched in.  I am avoiding using the aws Command Line Interface (CLI) which is not available on an AWS Ubuntu instance without a Public IPv4 address.  The (AWS) Elastic File System (EFS) directory method of configuring the EFS name for a region was replaced with the <a rel="nofollow" href="https://gitlab.com/aws-lam/aws/-/blob/master/aws-efs-mount.bash?ref_type=heads">aws/aws-efs-mount.bash script</a> that can be used once git clone is used is used to install the aws repo from the GitLab remote that supports both IPv4 and IPv6 access.
 </p>
 <h4><span id="The_LAMP_security_group_ID_is_unique_for_each_region">The LAMP security group ID is unique for each region</span></h4>
 <p>AWS shows the current region at the top of the control panel and the region is a drop down list within geographical groupings.  For me the four regions of the United States are shown first.
@@ -536,7 +532,7 @@ KEYNAME=lam2-SUSE-No-Public-IPv4-${REGION}-${INSTANCE_TYPE}${PublicIPv4}
 <li>The burglary and loss of server hardware at the Alaska LAN address prompted me to create an offsite clone to serve as the primary backup of the LAM Alaska website.</li></ul></li></ul>
 <!-- 
 NewPP limit report
-Cached time: 20250106034920
+Cached time: 20250106082403
 Cache expiry: 86400
 Reduced expiry: false
 Complications: [show‐toc]
@@ -555,13 +551,13 @@ Transclusion expansion time report (%,ms,calls,template)
 100.00%    0.000      1 -total
 -->
 
-<!-- Saved in parser cache with key wikidb:pcache:idhash:315-0!canonical and timestamp 20250106034920 and revision id 8347. Rendering was triggered because: edit-page
+<!-- Saved in parser cache with key wikidb:pcache:idhash:315-0!canonical and timestamp 20250106082403 and revision id 8349. Rendering was triggered because: edit-page
  -->
 </div>
 </div>
 <!-- end content -->
 <div id="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" style="display:none" /><div lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><label for="toctogglecheckbox"></label></div>
-<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=8347">https://ak20.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=8347</a>"</div>
+<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=8349">https://ak20.lam1.us/A/index.php?title=Linux_Apache_MariaDB_in_the_cloud&amp;oldid=8349</a>"</div>
 <ul>
 <li><a href="#About_LAM_AWS">1 About LAM AWS</a>
 <ul>
