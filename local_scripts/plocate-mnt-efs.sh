@@ -12,4 +12,4 @@ updatedb --require-visibility no \
 
 # To have the system run this daily
 # sudo ln -s /var/www/no-ssl/local_scripts/plocate-mnt-efs.sh \
-# /etc/cron.daily/plocate-mnt-Bk0
+# /etc/cron.daily/plocate-mnt-efs.sh
