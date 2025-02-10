@@ -24,7 +24,7 @@ for EFS in efs efs2 efs3 ; do
 done
 
 SYSTEM_LOCATE_PATH='/mnt/efs/plocate.db:/mnt/efs2/plocate.db'
-if [ ! -f /mnt/efs3/plocate.db ] ; then
+if [ -f /mnt/efs3/plocate.db ] ; then
     SYSTEM_LOCATE_PATH="${SYSTEM_LOCATE_PATH}:/mnt/efs3/plocate.db"
 fi
 echo "export LOCATE_PATH=${SYSTEM_LOCATE_PATH}" > /etc/profile.d/plocate.sh
