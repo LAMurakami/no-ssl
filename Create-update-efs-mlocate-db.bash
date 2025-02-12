@@ -7,7 +7,6 @@ for EFS in efs efs2 efs3 ; do
             echo "/mnt/${EFS}/mlocate.db does not exist"
             echo "Create /mnt/${EFS}/mlocate.db"
             /var/www/no-ssl/local_scripts/mlocate-mnt-${EFS}.sh # Build
-            chmod o+r /mnt/${EFS}/mlocate.db # Allow all to read
         else
             one_day_ago=$(date -d 'now - 1 day' +%s)
             file_time=$(date -r "/mnt/${EFS}/mlocate.db" +%s)
@@ -15,7 +14,6 @@ for EFS in efs efs2 efs3 ; do
                 echo "/mnt/${EFS}/mlocate.db is older than 1 day"
                 echo "update /mnt/${EFS}/mlocate.db"
                 /var/www/no-ssl/local_scripts/mlocate-mnt-${EFS}.sh # Update
-                chmod o+r /mnt/${EFS}/mlocate.db # Allow all to read
             fi
         fi
     else
