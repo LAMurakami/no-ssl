@@ -5,6 +5,8 @@ updatedb --require-visibility no \
 --output /mnt/efs3/mlocate.db \
 --database-root /mnt/efs3
 
+chmod o+r /mnt/efs3/mlocate.db
+
 # Script to rebuild the /mnt/efs3 locate database for NFS client users
 
 # To run this once

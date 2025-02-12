@@ -5,6 +5,8 @@ updatedb --require-visibility no \
 --output /mnt/efs2/plocate.db \
 --database-root /mnt/efs2
 
+chmod o+r /mnt/efs2/plocate.db
+
 # Script to rebuild the /mnt/efs2 plocate database for NFS client users
 
 # To run this once
