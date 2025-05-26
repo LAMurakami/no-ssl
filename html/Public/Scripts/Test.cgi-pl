@@ -8,7 +8,7 @@ use strict;     # Force me to use strict variable syntax.
 use warnings;  # Enable all warnings.
 
 LAM::displaySource(                   # Display source, rlog, etc. if requested.
-"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/Test.cgi-pl");
+"https://gitlab.com/aws-lam/no-ssl/-/blob/master/html/Public/Scripts/Test.cgi-pl");
 
 if (param('Submit')) { my $submitRequest = param('Submit');
 	if ($submitRequest eq 'View Form Data') {LAM::viewFormData()}

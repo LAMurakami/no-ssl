@@ -6,7 +6,7 @@ use strict;                            # Force me to use strict variable syntax.
 use warnings;                                                 # Enable warnings.
 
 LAM::displaySource(                   # Display source, rlog, etc. if requested.
-"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/Error-401.cgi-pl");
+"https://gitlab.com/aws-lam/no-ssl/-/blob/master/html/Public/Scripts/Error-401.cgi-pl");
 
 my $errorType = "Access Denied!";     # Authorization Required! = Access Denied!
 my $error = "401 $errorType";                            # 401 http server error

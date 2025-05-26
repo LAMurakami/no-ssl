@@ -7,7 +7,7 @@ use strict;                            # Force me to use strict variable syntax.
 use warnings;                                                 # Enable warnings.
 
 LAM::displaySource(                   # Display source, rlog, etc. if requested.
-"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/IPStatus.cgi-pl");
+"https://gitlab.com/aws-lam/no-ssl/-/blob/master/html/Public/Scripts/IPStatus.cgi-pl");
 
 my $ProgramHead1 = "<center><h1>LAM Alaska Connection Status<br>\n"
                  . '(<a href="/About/Program/IPStatus">IPStatus</a>)'

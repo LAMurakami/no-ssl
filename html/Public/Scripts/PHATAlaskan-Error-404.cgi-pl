@@ -5,7 +5,7 @@ use CGI qw(:all);                        # Perl Common Gateway Interface package
 use strict;                            # Force me to use strict variable syntax.
 use warnings;                                                 # Enable warnings.
 LAM::displaySource(                   # Display source, rlog, etc. if requested.
-"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/PHATAlaskan-Error-404.cgi-pl");
+"https://gitlab.com/aws-lam/no-ssl/-/blob/master/html/Public/Scripts/PHATAlaskan-Error-404.cgi-pl");
 
 my $errorType = '404 Not Found!';        # 404 Page Not Found! http server error
 

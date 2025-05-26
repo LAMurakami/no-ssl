@@ -5,6 +5,6 @@ use CGI qw(:all);                               # CGI - Load standard functions.
 use strict;                            # Force me to use strict variable syntax.
 use warnings;                                             # Enable all warnings.
 LAM::displaySource(                   # Display source, rlog, etc. if requested.
-"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/Test-2.cgi-pl");
+"https://gitlab.com/aws-lam/no-ssl/-/blob/master/html/Public/Scripts/Test-2.cgi-pl");
 
 print LAM::htmlHead(), "\n", center(LAM::menuBar()),"\n", end_html,"\n";

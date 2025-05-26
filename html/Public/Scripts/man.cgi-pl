@@ -5,7 +5,7 @@ use CGI qw(:all);                        # Perl Common Gateway Interface package
 use strict;                            # Force me to use strict variable syntax.
 use warnings;                                                 # Enable warnings.
 LAM::displaySource(                   # Display source, rlog, etc. if requested.
-"https://github.com/LAMurakami/no-ssl/blob/master/html/Public/Scripts/man.cgi-pl");
+"https://gitlab.com/aws-lam/no-ssl/-/blob/master/html/Public/Scripts/man.cgi-pl");
 
 if (not defined $ENV{'REMOTE_USER'}) {     # If not an authenticated remote user
    $ENV{'MANPATH'} = '/usr/local/share/man:/usr/share/man';        # Set MANPATH
