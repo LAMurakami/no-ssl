@@ -12,11 +12,15 @@ authentication over IPv6 as well as IPv4 unlike the
 Repostories that can only be accessed over IPv6 with the
 [IPv6 only workaround.](https://lamurakami.github.io/blog/2024/06/05/Access-GitHub-com-from-an-instance-without-a-public-IPv4-address.html)
 
-## Default unsecure site &lt;http&gt; configuration
+## Base site &lt;http&gt; configuration
+The no-ssl site <http> configuration was the default before 2024 when I went to https as the default.  I now use name based resolution for https as well as http protocols.  The aws site is now the default for no name as well as the DDNS names.
+
+[lam1.lam1.us](http://lam1.lam1.us/)
+[lam2.lam1.us](http://lam2.lam1.us/)
 [www.lam1.us](http://www.lam1.us/)
 [www.lamurakami.com](http://www.lamurakami.com/)
 
-Default unsecure site &lt;http&gt; configuration.
+Base unsecure site &lt;http&gt; configuration.
 
 This repo contains content in the html folder and an apache2 configuration.
 
